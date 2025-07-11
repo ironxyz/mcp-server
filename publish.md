@@ -39,7 +39,7 @@
 4. **Publish to npm:**
 
    ```bash
-   pnpm publish
+   pnpm run release
    ```
 
 5. **Push git changes:**

@@ -1,0 +1,46 @@
+name: Publish NPM Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (leave empty to use current package.json version)"
+        required: false
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+      - run: pnpm test
+
+  publish-npm:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9
+      - name: Set version if specified
+        if: ${{ github.event.inputs.version != '' }}
+        run: pnpm version ${{ github.event.inputs.version }} --no-git-tag-version
+      - run: pnpm install --frozen-lockfile
+      - name: Publish release
+        run: pnpm run release
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.IRON_NPM_PUBLISHING_TOKEN}}
