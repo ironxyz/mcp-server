@@ -1,6 +1,6 @@
 {
   "name": "@ironxyz/mcp-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Official MCP server for Iron.xyz API - provides easy access to Iron.xyz endpoints for Claude Desktop and Cursor IDE",
   "type": "module",
   "main": "dist/index.js",

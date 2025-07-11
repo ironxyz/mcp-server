@@ -706,7 +706,7 @@ class IronXyzMcpServer {
 
       // Prepare headers
       const requestHeaders: Record<string, string> = {
-        Authorization: `Bearer ${this.config.apiKey}`,
+        "X-API-key": this.config.apiKey,
         "Content-Type": "application/json",
         ...headers,
       };

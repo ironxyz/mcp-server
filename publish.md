@@ -66,6 +66,6 @@ IRON_ENVIRONMENT=production npx @ironxyz/mcp-server
 ## Package Info
 
 - **Package Name:** `@ironxyz/mcp-server`
-- **Current Version:** `0.1.0`
+- **Current Version:** `0.1.1`
 - **Registry:** https://npmjs.com/package/@ironxyz/mcp-server
 - **Repository:** https://github.com/ironxyz/mcp-server
