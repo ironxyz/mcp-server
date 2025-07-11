@@ -1,0 +1,6279 @@
+components:
+  schemas:
+    Account:
+      anyOf:
+      - $ref: '#/components/schemas/Account_FiatAccount'
+      - $ref: '#/components/schemas/Account_CryptoWallet'
+      description: |
+        Account
+
+        The account for the autoramp
+      discriminator:
+        mapping:
+          Crypto: '#/components/schemas/Account_CryptoWallet'
+          Fiat: '#/components/schemas/Account_FiatAccount'
+        propertyName: type
+      type: object
+    Account_CryptoWallet:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Crypto
+            example: Crypto
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/CryptoWallet'
+      description: |
+        Account
+
+        The account for the autoramp
+    Account_FiatAccount:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Fiat
+            example: Fiat
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/FiatAccount'
+      description: |
+        Account
+
+        The account for the autoramp
+    AchWireDepositInfo:
+      properties:
+        account_number:
+          type: string
+        bank_address:
+          type: string
+        bank_name:
+          type: string
+        recipient_address:
+          type: string
+        recipient_name:
+          type: string
+        routing_number:
+          type: string
+      required:
+      - routing_number
+      - account_number
+      - bank_name
+      - bank_address
+      - recipient_name
+      - recipient_address
+      title: AchWireDepositInfo
+      type: object
+    Address:
+      description: Address
+      properties:
+        address_city:
+          description: city
+          type: string
+        address_country:
+          description: country (2-character ISO 3166)
+          type: string
+        address_state:
+          description: state
+          type: string
+        address_street_1:
+          description: street address
+          type: string
+        address_street_2:
+          description: street address
+          type: string
+        address_zip_code:
+          description: zip code
+          type: string
+      required:
+      - address_street_1
+      - address_street_2
+      - address_city
+      - address_state
+      - address_zip_code
+      - address_country
+      title: Address
+      type: object
+    AddressFilter:
+      description: |
+        Filter for address types when retrieving signatures
+
+        Specifies which type of addresses to return
+      enum:
+      - Hosted
+      - SelfHosted
+      - All
+      type: string
+    AddressType:
+      enum:
+      - Hosted
+      - SelfHosted
+      type: string
+    AfricanBankTransferDepositInfo:
+      properties:
+        account_name:
+          type: string
+        account_number:
+          type: string
+        amount:
+          format: decimal
+          type: string
+        bank_name:
+          type: string
+        currency:
+          type: string
+        financial_institution:
+          $ref: '#/components/schemas/Bank'
+        instruction:
+          type: string
+        reference_id:
+          type: string
+      title: AfricanBankTransferDepositInfo
+      type: object
+    Amount:
+      description: |
+        An amount of money
+      properties:
+        amount:
+          description: The amount, a decimal number
+          format: decimal
+          type: string
+        currency:
+          $ref: '#/components/schemas/Currency'
+      required:
+      - amount
+      - currency
+      title: Amount
+      type: object
+    ApiAutorampOpenBankingPayment:
+      description: |
+        Autoramp Payment Link
+
+        The autoramp payment link
+      properties:
+        id:
+          type: string
+        payment_link:
+          type: string
+        status:
+          $ref: '#/components/schemas/ApiAutorampOpenBankingPaymentStatus'
+      required:
+      - id
+      - status
+      title: ApiAutorampOpenBankingPayment
+      type: object
+    ApiAutorampOpenBankingPaymentStatus:
+      description: |
+        Autoramp Payment Link Status
+
+        The status of the autoramp payment link
+      enum:
+      - Pending
+      - Ready
+      - Processing
+      - Completed
+      - Failed
+      type: string
+    ApiBankAccountSource:
+      description: A bank account source of an autoramp transaction
+      properties:
+        bank_name:
+          description: The bank name
+          type: string
+        bic:
+          description: The bic
+          type: string
+        iban:
+          description: The iban
+          type: string
+        name:
+          description: The name
+          type: string
+      required:
+      - bank_name
+      - iban
+      - bic
+      - name
+      title: ApiBankAccountSource
+      type: object
+    ApiCanCreateAutorampResponse:
+      description: |
+        Can Create Autoramp Response
+
+        Indicates whether a customer can create a new autoramp.
+      properties:
+        can_create:
+          description: Whether the customer can create a new autoramp based on the provided parameters.
+          type: boolean
+      required:
+      - can_create
+      title: ApiCanCreateAutorampResponse
+      type: object
+    ApiWalletDepositSource:
+      description: A wallet deposit source of an autoramp transaction
+      properties:
+        blockchain:
+          description: The blockchain
+          type: string
+        wallet_address:
+          description: The wallet address
+          type: string
+      required:
+      - wallet_address
+      - blockchain
+      title: ApiWalletDepositSource
+      type: object
+    AuthenticationCode:
+      description: |
+        An authentication code
+
+        used to confirm a 2FA action
+      properties:
+        attempts:
+          description: attempts to submit the authentication code
+          format: int32
+          type: integer
+        entity_id:
+          description: the ID of the entity the authentication is related to
+          format: uuid
+          type: string
+        expires_at:
+          description: the time of expiry for the authentication code
+          format: date-time
+          type: string
+        id:
+          description: The ID of the authentication code
+          format: uuid
+          type: string
+        status:
+          $ref: '#/components/schemas/AuthenticationCodeStatus'
+      required:
+      - id
+      - status
+      - expires_at
+      - attempts
+      - entity_id
+      title: AuthenticationCode
+      type: object
+    AuthenticationCodeStatus:
+      description: The status of the Authentication Code
+      enum:
+      - Pending
+      - Expired
+      - Confirmed
+      - Rejected
+      type: string
+    Autoramp:
+      description: |-
+        Autoramp
+
+        The autoramp response
+
+        A Autoramp response
+      properties:
+        additional_partner_fee_in_bips:
+          description: The additional partner fee in bips
+          format: decimal
+          type: string
+        created_at:
+          description: The created at timestamp
+          format: date-time
+          type: string
+        deposit_account:
+          $ref: '#/components/schemas/DepositAccount'
+        destination_currency:
+          $ref: '#/components/schemas/Currency'
+        external_id:
+          description: External ID for the autoramp, provided by the partner
+          type: string
+        id:
+          description: The id of the autoramp
+          format: uuid
+          type: string
+        is_third_party:
+          description: Is this a third party payment (3pp) autoramp
+          type: boolean
+        name:
+          description: The name of the autoramp
+          type: string
+        quote:
+          $ref: '#/components/schemas/AutorampQuote'
+        recipient:
+          $ref: '#/components/schemas/Recipient'
+        source:
+          $ref: '#/components/schemas/AutorampSource'
+        source_currencies:
+          description: The source currencies
+          items:
+            $ref: '#/components/schemas/Currency'
+          type: array
+        status:
+          $ref: '#/components/schemas/AutorampStatus'
+        travel_address:
+          description: The travel rule address for compliance
+          type: string
+      required:
+      - id
+      - status
+      - created_at
+      - source_currencies
+      - destination_currency
+      - source
+      - is_third_party
+      - recipient
+      title: Autoramp
+      type: object
+    AutorampQuote:
+      description: |
+        Autoramp Quote
+
+        The autoramp quote used to create an autoramp
+      properties:
+        amount_in:
+          $ref: '#/components/schemas/Amount'
+        amount_out:
+          $ref: '#/components/schemas/Amount'
+        fee:
+          $ref: '#/components/schemas/Fee'
+        fee_settlement:
+          $ref: '#/components/schemas/FeeSettlement'
+        partner_fee_settlement:
+          $ref: '#/components/schemas/FeeSettlement'
+        quote_id:
+          description: The id of the quote
+          format: uuid
+          type: string
+        rate:
+          description: The rate
+          format: decimal
+          type: string
+        rate_expiry_policy:
+          $ref: '#/components/schemas/RateExpiryPolicy'
+        rate_lock_valid_until:
+          description: The rate lock valid until
+          format: date-time
+          type: string
+        slippage_tolerance_in_bips:
+          description: The slippage tolerance in bips
+          format: decimal
+          type: string
+        valid_until:
+          description: The valid until
+          format: date-time
+          type: string
+      required:
+      - quote_id
+      - amount_in
+      - amount_out
+      - rate
+      - rate_lock_valid_until
+      - rate_expiry_policy
+      - fee
+      - fee_settlement
+      - partner_fee_settlement
+      - valid_until
+      title: AutorampQuote
+      type: object
+    AutorampSource:
+      description: |-
+        Autoramp Source
+
+        The source of the autoramp
+      enum:
+      - Standalone
+      - Quote
+      type: string
+    AutorampStatus:
+      enum:
+      - Created
+      - Authorized
+      - DepositAccountAdded
+      - Approved
+      - Rejected
+      - Cancelled
+      type: string
+    AutorampTransaction:
+      description: |-
+        Autoramp Transaction
+
+        The autoramp transaction response
+
+        A Payment response
+      properties:
+        created_at:
+          description: Date of transaction creation
+          format: date-time
+          type: string
+        customer_id:
+          description: The ID of the customer two whom this transaction belongs
+          format: uuid
+          type: string
+        destination_amount:
+          $ref: '#/components/schemas/Amount'
+        exchange_rate:
+          description: The exchange rate
+          format: decimal
+          type: string
+        fee:
+          description: The total fee charged
+          format: decimal
+          type: string
+        fee_breakdown:
+          $ref: '#/components/schemas/Fee'
+        fee_settlement:
+          $ref: '#/components/schemas/FeeSettlement'
+        id:
+          description: The ID of the transaction
+          format: uuid
+          type: string
+        is_third_party:
+          description: Is this a third party payment (3pp) autoramp
+          type: boolean
+        recipient:
+          $ref: '#/components/schemas/Recipient'
+        source:
+          $ref: '#/components/schemas/RampTransactionSource'
+        source_amount:
+          $ref: '#/components/schemas/Amount'
+        state:
+          $ref: '#/components/schemas/AutorampTransactionState'
+      required:
+      - id
+      - customer_id
+      - state
+      - source_amount
+      - destination_amount
+      - recipient
+      - fee
+      - exchange_rate
+      - created_at
+      - fee_settlement
+      - is_third_party
+      title: AutorampTransaction
+      type: object
+    AutorampTransactionState:
+      description: |
+        Autoramp Transaction State
+
+        The state of the autoramp transaction
+      enum:
+      - Pending
+      - PayoutPending
+      - Payout
+      - PayoutCompleted
+      - Completed
+      - Failed
+      - InAmlReview
+      - AmlRejected
+      - AmountRejected
+      type: string
+    Bank:
+      enum:
+      - 9JAPAY MICROFINANCE
+      - ABSA Bank Botswana
+      - ACCESS BANK
+      - AFRICAN BANKING CORPORATION
+      - AIRTELMONEYTZ
+      - AZAMPESA
+      - Absa Bank
+      - Absa Bank Kenya Plc
+      - Absa Bank Tanzania Limited
+      - Access Bank
+      - Access Bank (Diamond)
+      - AccessBank Tanzania
+      - African Bank
+      - Airtel
+      - Akiba Commercial Bank
+      - Albaraka Bank
+      - Amana Bank
+      - Azania Bank
+      - BANK OF AFRICA KENYA LTD
+      - BANK OF BARODA
+      - BANK OF INDIA
+      - BARCLAYS BANK
+      - BancABC Tanzania
+      - Bank Gaborone Limited
+      - Bank Of Baroda Botswana
+      - Bank Of Namibia
+      - Bank of Africa Tanzania Limited
+      - Bank of Athens
+      - Bank of Baroda Tanzania Limited
+      - Bank of Tanzania
+      - Barclays Bank
+      - Bidvest Bank
+      - CENTRAL BANK OF KENYA
+      - CHARTERHOUSE BANK LTD
+      - CITIBANK N.A.
+      - CO-OPERATIVE BANK
+      - COMMERCIAL BANK OF AFRICA LTD
+      - CONSOLIDATED BANK OF KENYA LTD
+      - CRDB Bank
+      - CREDIT BANK LTD
+      - Capitec Bank
+      - Central Bank Of Lesotho
+      - China Commercial Bank Limited
+      - Citi Bank
+      - Citibank Nigeria
+      - Citibank Tanzania Ltd
+      - DCB Commercial Bank
+      - DEVELOPMENT BANK OF KENYA
+      - DIAMOND TRUST BANK
+      - DUBAI BANK OF KENYA LTD
+      - Diamond Trust Bank Tanzania
+      - Discovery Bank Limited
+      - ECOBANK KENYA LTD
+      - EQUITORIAL COMMERCIAL BANK LTD
+      - EQUITY BANK
+      - Ecobank
+      - Ecobank Nigeria
+      - Enterprise Bank
+      - Equity Bank (Tanzania)
+      - Exim Bank (Tanzania)
+      - FAMILY BANK LTD
+      - FIDELITY COMMERCIAL BANK
+      - FIRST COMMUNITY BANK
+      - Fairmoney Microfinance Bank Ltd
+      - Fidelity Bank
+      - Finbond Mutual Bank
+      - First Bank of Nigeria
+      - First Capital Bank Botswana
+      - First City Monument Bank
+      - First National Bank
+      - First National Bank (South Africa)
+      - First National Bank Lesotho
+      - First National Bank Namibia
+      - First National Bank Swaziland
+      - First National Bank of Tanzania
+      - FirstRand Bank Limited
+      - GIRO BANK LTD
+      - GT Bank
+      - GUARANTY TRUST (KENYA) LTD
+      - GUARDIAN BANK
+      - GULF AFRICAN BANK LTD
+      - GoMoney
+      - Grinrod Bank
+      - Guaranty Trust Bank
+      - Guaranty Trust Bank (Tanzania) Limited
+      - HABIB BANK A.G.
+      - HABIB BANK LTD
+      - HALOPESA
+      - HOUSING FINANCE CORPORATION OF KENYA
+      - Habib African Bank
+      - Heritage Bank
+      - Hsbc Bank
+      - I&M Bank (Tanzania)
+      - IMPERIAL BANK LIMITED
+      - INVESTMENTS AND MORTGAGES
+      - International Commercial Bank Tanzania
+      - Investec Bank
+      - JAMII BORA BANK LTD
+      - Jaiz Bank
+      - Jp Morgan Chase Bank
+      - K-REP BANK
+      - KENYA COMMERCIAL BANK LTD
+      - Kcb Bank Tanzania Limited
+      - Keystone Bank
+      - Kuda Microfinance Bank
+      - Letshego Bank Tanzania
+      - Lotus Bank
+      - MIDDLE EAST BANK (K) LIMITED
+      - MTN
+      - Maendeleo Bank Ltd
+      - Mainstreet Bank
+      - Meeg Bank
+      - Mercantile Bank Limited
+      - Mkombozi Commercial Bank
+      - MoMo PSB
+      - Mobile Wallet
+      - Mobile Wallet (M-PESA)
+      - Moniepoint Microfinance Bank
+      - Moov money
+      - Mtn Banking
+      - Mtn Mobile Money
+      - Mwalimu Commercial Bank
+      - NATIONAL BANK OF KENYA
+      - NCBA Bank
+      - NCBA Bank Tanzania
+      - NET MFB
+      - National Bank of Commerce (Tanzania)
+      - National Microfinance Bank
+      - Nedbank (South Africa)
+      - Nownow（Contec Global)
+      - OPay
+      - ORIENTAL COMMERCIAL BANK
+      - Old Mutual
+      - Orange Money
+      - PARAMOUNT UNIVERSAL BANK LTD
+      - PRIME BANK LIMITED
+      - Paga
+      - PalmPay
+      - Peach
+      - People's Bank of Zanzibar
+      - Polaris Bank
+      - Postbank
+      - Premium Trust bank
+      - Providus Bank
+      - RMB Private Bank
+      - Rand Merchant Bank
+      - SA Post Bank (Post Office)
+      - STANBIC BANK
+      - STANBIC BANK KENYA LIMITED
+      - STANDARD CHARTERED
+      - Sasfin Bank Limited
+      - South African Bank of Athens Limited
+      - Stanbic Bank Tanzania Limited
+      - Stanbic Ibtc Bank
+      - Standard Bank (South Africa)
+      - Standard Bank Namibia
+      - Standard Chartered Bank
+      - Standard Chartered Bank Botswana Limited
+      - State Bank Of India
+      - Sterling Bank
+      - TIGO
+      - TNM
+      - TPB Bank Plc
+      - TRANS-NATIONAL BANK
+      - Taj Bank
+      - Titan-Paystack
+      - Tyme Bank
+      - UBA KENYA LTD
+      - Ubank
+      - Unibank
+      - Union Bank of Nigeria
+      - United Bank for Africa
+      - Unity Bank
+      - VFD Microfinance Bank
+      - VICTORIA COMMERCIAL BANK LTD
+      - VISA/MasterCard
+      - VODACOM
+      - Vbs Mutual Bank
+      - Wave
+      - Wema Bank
+      - Zamtel
+      - Zenith Bank
+      type: string
+    BankAccountACHIdentifier:
+      properties:
+        account_number:
+          type: string
+        routing_number:
+          type: string
+      required:
+      - routing_number
+      - account_number
+      title: BankAccountACHIdentifier
+      type: object
+    BankAccountIdentifier:
+      anyOf:
+      - $ref: '#/components/schemas/BankAccountIdentifier_Iban'
+      - $ref: '#/components/schemas/BankAccountIdentifier_BankAccountACHIdentifier'
+      - $ref: '#/components/schemas/BankAccountIdentifier_BankAccountWireIdentifier'
+      discriminator:
+        mapping:
+          ACH: '#/components/schemas/BankAccountIdentifier_BankAccountACHIdentifier'
+          SEPA: '#/components/schemas/BankAccountIdentifier_Iban'
+          Wire: '#/components/schemas/BankAccountIdentifier_BankAccountWireIdentifier'
+        propertyName: type
+      type: object
+    BankAccountIdentifier_BankAccountACHIdentifier:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - ACH
+            example: ACH
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/BankAccountACHIdentifier'
+    BankAccountIdentifier_BankAccountWireIdentifier:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Wire
+            example: Wire
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/BankAccountWireIdentifier'
+    BankAccountIdentifier_Iban:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - SEPA
+            example: SEPA
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/Iban'
+    BankAccountWireIdentifier:
+      properties:
+        account_number:
+          type: string
+        routing_number:
+          type: string
+      required:
+      - routing_number
+      - account_number
+      title: BankAccountWireIdentifier
+      type: object
+    BankingFeeConfig:
+      description: |
+        Banking Fee Config Response
+
+        A banking fee config response which can be deducted immediately from the transaction amount or invoiced monthly/separately
+      properties:
+        billing_type:
+          $ref: '#/components/schemas/BillingType'
+        fee_amount:
+          $ref: '#/components/schemas/Amount'
+        fiat_transfer_type:
+          $ref: '#/components/schemas/FiatTransfer'
+        rail:
+          $ref: '#/components/schemas/PaymentNetwork'
+      required:
+      - rail
+      - fee_amount
+      - fiat_transfer_type
+      - billing_type
+      title: BankingFeeConfig
+      type: object
+    BillingType:
+      description: |
+        Billing Type
+
+        The type of billing for the partner fee
+      enum:
+      - One Time
+      - Monthly
+      - Quarterly
+      - Annual
+      - Semi Annual
+      - Per Transaction
+      type: string
+    BipsFeeRequest:
+      description: |
+        Bips Fee Request
+
+        The request for a bips fee
+      properties:
+        bips:
+          description: The bips fee value
+          format: uint32
+          type: integer
+      required:
+      - bips
+      title: BipsFeeRequest
+      type: object
+    Blockchain:
+      description: |
+        Blockchain
+
+        A type of blockchain
+      enum:
+      - Solana
+      - Ethereum
+      - Polygon
+      - Arbitrum
+      type: string
+    BusinessName:
+      properties:
+        name:
+          type: string
+      required:
+      - name
+      title: BusinessName
+      type: object
+    BusinessOfficer:
+      description: |
+        Business Officer
+
+        A business officer is a person who is responsible for the business
+      properties:
+        address:
+          $ref: '#/components/schemas/Address'
+        birth_date:
+          description: date of birth in YYYY-MM-DD format
+          type: string
+        consent_collected_at:
+          description: |-
+            The date and time when the business officer gave consent to share identification information with Iron
+            timestamp must be UTC timestamp e.g. 2025-02-01T15:38:21.775210Z
+          type: string
+        consent_given:
+          description: Whether the business officer has given consent to share their identification information with iron
+          type: boolean
+        email:
+          description: email of the business officer
+          type: string
+        first_name:
+          description: The first name of the business officer
+          type: string
+        full_name:
+          description: The full name of the business officer
+          type: string
+        identity:
+          $ref: '#/components/schemas/PersonIdentity'
+        initiator:
+          description: |-
+            the business officer who has initiated the identification request on behalf of the business
+            There must always be one initiator
+          type: boolean
+        last_name:
+          description: The last name of the business officer
+          type: string
+        ownership_percent:
+          description: ownership percentage of the business
+          format: int32
+          type: integer
+        pep_relationships:
+          description: any politcally exposed person roles held by the business officer in the last year
+          items:
+            type: string
+          type: array
+        phone_number:
+          description: phone number of the business officer
+          type: string
+        roles:
+          description: |-
+            roles associated with the business officer,
+            at least one business officer must be a director and beneficiary owner
+          items:
+            $ref: '#/components/schemas/BusinessOfficerRoleType'
+          type: array
+        shares_allocated:
+          description: shares allocated to the business officer
+          format: int32
+          type: integer
+      required:
+      - first_name
+      - last_name
+      - full_name
+      - birth_date
+      - ownership_percent
+      - shares_allocated
+      - roles
+      - email
+      - identity
+      - address
+      - phone_number
+      - pep_relationships
+      - initiator
+      - consent_given
+      title: BusinessOfficer
+      type: object
+    BusinessOfficerRoleType:
+      description: |
+        Business Officer Role Type
+
+        The various roles a business officer can have
+      enum:
+      - Director
+      - LegalRepresentative
+      - BeneficiaryOwner
+      type: string
+    BusinessProfileCurrentActivities:
+      description: |
+        Business Profile Current Activities
+
+        The activities a business is currently engaged in
+      properties:
+        business_details:
+          description: Please briefly describe Company's business model, target clients and revenue streams
+          type: string
+        last_year_turnover:
+          $ref: '#/components/schemas/BusinessProfileTurnover'
+        main_business_countries:
+          description: Main business countries
+          type: string
+        planned_turnover_this_year:
+          $ref: '#/components/schemas/BusinessProfileTurnover'
+        primary_business_activities:
+          $ref: '#/components/schemas/BusinessProfilePrimaryActivities'
+        regulated_or_supervised:
+          description: Is the business regulated or subject to AML/CFT supervision? if so please elaborate
+          type: string
+        source_of_funds:
+          description: Source of company funds
+          items:
+            $ref: '#/components/schemas/BusinessProfileSourceOfFunds'
+          type: array
+      required:
+      - primary_business_activities
+      - business_details
+      - main_business_countries
+      - source_of_funds
+      - last_year_turnover
+      - planned_turnover_this_year
+      title: BusinessProfileCurrentActivities
+      type: object
+    BusinessProfileMonthlyTransactions:
+      description: |
+        Business Profile Monthly Transactions
+
+        The monthly transactions of a business
+      enum:
+      - LessThanTen
+      - TenToTwentyFive
+      - TwentyFiveToFifty
+      - FiftyToHundred
+      - MoreThanHundred
+      type: string
+    BusinessProfilePlannedActivities:
+      description: |
+        Business Profile Planned Activities
+
+        The planned activities of a business in the near future
+      properties:
+        estimated_monthly_transactions:
+          $ref: '#/components/schemas/BusinessProfileMonthlyTransactions'
+        estimated_monthly_turnover:
+          $ref: '#/components/schemas/BusinessProfileTurnover'
+        source_and_destination_countries:
+          description: Countries where funds originate from and are sent to
+          type: string
+      required:
+      - estimated_monthly_turnover
+      - estimated_monthly_transactions
+      - source_and_destination_countries
+      title: BusinessProfilePlannedActivities
+      type: object
+    BusinessProfilePrimaryActivities:
+      description: |
+        Business Profile Primary Activities
+
+        The primary industries a business is engaged in
+      enum:
+      - AgricultureAndForestry
+      - Automotive
+      - BankingAndFinancialServices
+      - CasinosAndGambling
+      - ConstructionAndRealEstate
+      - CrowdfundingPlatforms
+      - CryptocurrencyAndBlockchain
+      - CryptocurrencyMining
+      - CryptoCustodyServices
+      - CryptoExchanges
+      - CryptoPaymentProcessors
+      - CryptoWalletProviders
+      - DefiProtocols
+      - EcommerceAndOnlineMarketplaces
+      - EducationAndTraining
+      - EnergyAndUtilities
+      - EntertainmentAndMedia
+      - GamingAndEsports
+      - HealthcareAndPharmaceuticals
+      - HospitalityAndTourism
+      - InformationTechnologyAndSoftwareDevelopment
+      - Insurance
+      - LegalAndProfessionalServices
+      - LogisticsAndTransportation
+      - ManufacturingAndIndustrial
+      - MetaversePlatforms
+      - MiningAndNaturalResources
+      - MoneyServiceBusinesses
+      - NftPlatforms
+      - NonProfitAndCharitableOrganizations
+      - RegTech
+      - RetailAndWholesaleTrade
+      - SocialMediaAndNetworkingPlatforms
+      - Telecommunications
+      - VentureCapitalAndPrivateEquity
+      type: string
+    BusinessProfileSourceOfFunds:
+      description: |
+        Business Profile Source of Funds
+
+        The sources of funds for a business
+      enum:
+      - RevenueFromBusinessOperations
+      - ShareholderContributions
+      - VentureCapitalOrPrivateEquityInvestments
+      - SaleOfAssets
+      - InitialCoinOfferingProceeds
+      - ProceedsFromCryptoCurrenciesRelatedActivities
+      - Loans
+      type: string
+    BusinessProfileTurnover:
+      description: |
+        Business Profile Turnover
+
+        The turnover of a business
+      enum:
+      - LessThanTenK
+      - TenKToTwentyFiveK
+      - TwentyFiveKToFiftyK
+      - FiftyKToHundredK
+      - HundredKToTwoFiftyK
+      - TwoFiftyKToFiveHundredK
+      - FiveHundredKToOneMillion
+      - OneMillionToFiveMillion
+      - MoreThanFiveMillion
+      type: string
+    Country:
+      description: A country
+      example:
+        code: DE
+      properties:
+        code:
+          description: The ISO_3166-1 Alpha-2 country code, e.g. "DE"
+          maxLength: 2
+          minLength: 2
+          type: string
+      required:
+      - code
+      title: Country
+      type: object
+    CreateAutoramp:
+      anyOf:
+      - $ref: '#/components/schemas/CreateAutorampParameters'
+      - $ref: '#/components/schemas/SignedAutorampQuote'
+      description: |
+        Create Autoramp
+
+        The create autoramp request
+      type: object
+    CreateAutorampOpenBankingPayment:
+      description: |
+        Create Autoramp Payment Link Payload
+
+        The parameters for creating an autoramp payment link
+      properties:
+        amount_in:
+          $ref: '#/components/schemas/Amount'
+        callback_url:
+          type: string
+      required:
+      - amount_in
+      - callback_url
+      title: CreateAutorampOpenBankingPayment
+      type: object
+    CreateAutorampParameters:
+      description: |
+        Create Autoramp Parameters
+
+        The parameters required to create a autoramp
+      properties:
+        additional_partner_fee_in_bips:
+          description: The additional partner fee in bips. This will be added to the fee.
+          format: decimal
+          type: string
+        customer_id:
+          description: The customer id
+          format: uuid
+          type: string
+        destination_currency:
+          $ref: '#/components/schemas/Currency'
+        external_id:
+          description: External ID for the autoramp, provided by the partner
+          type: string
+        name:
+          description: The name of the autoramp
+          type: string
+        recipient_account:
+          $ref: '#/components/schemas/Account'
+        source_currencies:
+          description: The list of source currencies
+          items:
+            $ref: '#/components/schemas/Currency'
+          type: array
+        source_is_third_party:
+          description: |-
+            The source should be third party. E.g. a fiat account that allows
+            recieving 3pp payments.
+          type: boolean
+      required:
+      - source_currencies
+      - destination_currency
+      - recipient_account
+      - customer_id
+      - source_is_third_party
+      title: CreateAutorampParameters
+      type: object
+    CreateCustomerParams:
+      description: |
+        Customer Params
+
+        Parameters for creating a customer
+      properties:
+        customer_type:
+          $ref: '#/components/schemas/CustomerType'
+        email:
+          description: |-
+            The primary point of contact email address for the customer
+            Note that this email address will be used for all API authorization (e.g. 2FA)
+          type: string
+        external_id:
+          description: External ID for the customer, provided by the partner
+          type: string
+        name:
+          description: The name of the customer
+          type: string
+      required:
+      - customer_type
+      - email
+      title: CreateCustomerParams
+      type: object
+    Crypto:
+      description: A cryptocurrency
+      example:
+        blockchain: Solana
+        token: USDC
+      properties:
+        blockchain:
+          $ref: '#/components/schemas/Blockchain'
+        token:
+          description: The ticker of the token e.g. 'USDC'
+          type: string
+      required:
+      - token
+      - blockchain
+      title: Crypto
+      type: object
+    CryptoCurrency:
+      properties:
+        address:
+          description: The address that this currency has on the `chain`
+          type: string
+        chain:
+          description: The chain for this currency
+          type: string
+        code:
+          description: The ticker of the cryptocurrency. E.g. USDC
+          type: string
+        name:
+          description: An optional name of the cryptocurrency. E.g. `USD Coin`
+          type: string
+      required:
+      - code
+      - chain
+      title: CryptoCurrency
+      type: object
+    CryptoWallet:
+      description: |
+        Crypto Wallet
+
+        The crypto wallet for the autoramp
+      properties:
+        address:
+          description: The address of the crypto account
+          type: string
+        chain:
+          $ref: '#/components/schemas/Blockchain'
+      required:
+      - chain
+      - address
+      title: CryptoWallet
+      type: object
+    Currency:
+      anyOf:
+      - $ref: '#/components/schemas/Currency_Crypto'
+      - $ref: '#/components/schemas/Currency_Fiat'
+      description: |
+        Currency
+
+        Can be either crypto or fiat
+      discriminator:
+        mapping:
+          Crypto: '#/components/schemas/Currency_Crypto'
+          Fiat: '#/components/schemas/Currency_Fiat'
+        propertyName: type
+      type: object
+    CurrencyType:
+      description: |
+        Currency Type
+
+        The type of currency
+      enum:
+      - fiat
+      - crypto
+      type: string
+    Currency_Crypto:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Crypto
+            example: Crypto
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/Crypto'
+      description: |
+        Currency
+
+        Can be either crypto or fiat
+    Currency_Fiat:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Fiat
+            example: Fiat
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/Fiat'
+      description: |
+        Currency
+
+        Can be either crypto or fiat
+    Customer:
+      description: |
+        Customer
+
+        The customer object in Iron
+      properties:
+        created_at:
+          description: Created at timestamp of Customer
+          format: date-time
+          type: string
+        customer_type:
+          $ref: '#/components/schemas/CustomerType'
+        email:
+          description: Email of Customer, collected during identification process
+          type: string
+        external_id:
+          description: External ID for the customer, provided by the partner
+          type: string
+        id:
+          description: Unique ID of Customer
+          format: uuid
+          type: string
+        identification_ids:
+          description: Identifications associated with Customer
+          items:
+            format: uuid
+            type: string
+          type: array
+        name:
+          description: Name of Customer
+          type: string
+        signing_ids:
+          description: Signings associated with Customer
+          items:
+            format: uuid
+            type: string
+          type: array
+        status:
+          $ref: '#/components/schemas/CustomerStatus'
+        updated_at:
+          description: Updated at timestamp of Customer
+          format: date-time
+          type: string
+      required:
+      - id
+      - customer_type
+      - identification_ids
+      - signing_ids
+      - created_at
+      - updated_at
+      - status
+      - name
+      - email
+      title: Customer
+      type: object
+    CustomerStatus:
+      description: |
+        The status of the Customer
+      enum:
+      - UserRequired
+      - SigningsRequired
+      - IdentificationRequired
+      - Active
+      - Suspended
+      type: string
+    CustomerType:
+      description: |
+        CustomerType
+
+        Customers can either be a commercial business or a natural person
+      enum:
+      - Business
+      - Person
+      type: string
+    DepositAccount:
+      anyOf:
+      - $ref: '#/components/schemas/DepositAccount_IbanDepositInfo'
+      - $ref: '#/components/schemas/DepositAccount_AchWireDepositInfo'
+      - $ref: '#/components/schemas/DepositAccount_AfricanBankTransferDepositInfo'
+      - $ref: '#/components/schemas/DepositAccount_PixDepositInfo'
+      - $ref: '#/components/schemas/DepositAccount_SpeiDepositInfo'
+      - $ref: '#/components/schemas/DepositAccount_MobileMoneyDepositInfo'
+      - $ref: '#/components/schemas/DepositAccount_CryptoWallet'
+      description: |
+        DepositAccount
+
+        An account for autoramp deposits
+      discriminator:
+        mapping:
+          ACHWire: '#/components/schemas/DepositAccount_AchWireDepositInfo'
+          AfricanBankTransfer: '#/components/schemas/DepositAccount_AfricanBankTransferDepositInfo'
+          Crypto: '#/components/schemas/DepositAccount_CryptoWallet'
+          MobileMoney: '#/components/schemas/DepositAccount_MobileMoneyDepositInfo'
+          Pix: '#/components/schemas/DepositAccount_PixDepositInfo'
+          SEPA: '#/components/schemas/DepositAccount_IbanDepositInfo'
+          Spei: '#/components/schemas/DepositAccount_SpeiDepositInfo'
+        propertyName: type
+      type: object
+    DepositAccountType:
+      enum:
+      - Iban
+      - Wallet
+      - AchWire
+      - Pix
+      - Spei
+      - AfricanBankTransfer
+      - MobileMoney
+      type: string
+    DepositAccount_AchWireDepositInfo:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - ACHWire
+            example: ACHWire
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/AchWireDepositInfo'
+      description: |
+        DepositAccount
+
+        An account for autoramp deposits
+    DepositAccount_AfricanBankTransferDepositInfo:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - AfricanBankTransfer
+            example: AfricanBankTransfer
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/AfricanBankTransferDepositInfo'
+      description: |
+        DepositAccount
+
+        An account for autoramp deposits
+    DepositAccount_CryptoWallet:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Crypto
+            example: Crypto
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/CryptoWallet'
+      description: |
+        DepositAccount
+
+        An account for autoramp deposits
+    DepositAccount_IbanDepositInfo:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - SEPA
+            example: SEPA
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/IbanDepositInfo'
+      description: |
+        DepositAccount
+
+        An account for autoramp deposits
+    DepositAccount_MobileMoneyDepositInfo:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - MobileMoney
+            example: MobileMoney
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/MobileMoneyDepositInfo'
+      description: |
+        DepositAccount
+
+        An account for autoramp deposits
+    DepositAccount_PixDepositInfo:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Pix
+            example: Pix
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/PixDepositInfo'
+      description: |
+        DepositAccount
+
+        An account for autoramp deposits
+    DepositAccount_SpeiDepositInfo:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Spei
+            example: Spei
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/SpeiDepositInfo'
+      description: |
+        DepositAccount
+
+        An account for autoramp deposits
+    Document:
+      description: |
+        Document
+
+        The data associated with a document
+      properties:
+        content_type:
+          description: the content type of the document
+          type: string
+        created_at:
+          description: created at timestamp of Document
+          format: date-time
+          type: string
+        display_name:
+          description: display name of Document
+          type: string
+        file_name:
+          description: name of Document
+          type: string
+        id:
+          description: unique UUID of Document
+          format: uuid
+          type: string
+        updated_at:
+          description: updated_at timestamp of Document
+          format: date-time
+          type: string
+      required:
+      - id
+      - file_name
+      - display_name
+      - content_type
+      - created_at
+      - updated_at
+      title: Document
+      type: object
+    DocumentType:
+      description: |
+        Document Type
+
+        The type of document used in the KYB process
+      enum:
+      - BusinessRegistrationDocument
+      - MemorandumOfAssociation
+      - ShareholdersRegistry
+      - Other
+      - ProofOfAddress
+      type: string
+    EmailAddress:
+      description: |
+        EmailAddress
+
+        An email address
+        An email address
+      properties:
+        email:
+          description: The email address
+          type: string
+      required:
+      - email
+      title: EmailAddress
+      type: object
+    EmploymentStatus:
+      description: |
+        Employment Status
+
+        The employment status of the person
+      enum:
+      - Employed
+      - SelfEmployed
+      - Unemployed
+      - Retired
+      - Student
+      type: string
+    ExchangeRate:
+      description: |
+        Exchange Rate
+
+        The exchange rate for a given currency pair
+      properties:
+        effective_rate:
+          description: The effective rate
+          format: decimal
+          type: string
+        fee:
+          $ref: '#/components/schemas/Fee'
+        from:
+          $ref: '#/components/schemas/Currency'
+        out_amount:
+          $ref: '#/components/schemas/Amount'
+        to:
+          $ref: '#/components/schemas/Currency'
+      required:
+      - from
+      - to
+      - out_amount
+      - effective_rate
+      - fee
+      title: ExchangeRate
+      type: object
+    Fee:
+      description: |
+        Fee
+
+        The fee for a given currency pair
+      properties:
+        iron_fee:
+          $ref: '#/components/schemas/Amount'
+        iron_fee_settlement:
+          $ref: '#/components/schemas/FeeSettlement'
+        network_fees:
+          description: The network fees in source currency
+          items:
+            $ref: '#/components/schemas/NetworkFee'
+          type: array
+        partner_fee:
+          $ref: '#/components/schemas/Amount'
+        partner_fees:
+          description: The partner fees
+          items:
+            $ref: '#/components/schemas/PartnerFee'
+          type: array
+        total_fee:
+          $ref: '#/components/schemas/Amount'
+      required:
+      - total_fee
+      - iron_fee
+      - partner_fee
+      - network_fees
+      - partner_fees
+      title: Fee
+      type: object
+    FeeProfile:
+      description: |-
+        Fee Profile
+
+        A fee profile
+
+        A Fee Profile
+      properties:
+        banking_fee_configs:
+          description: The banking fee configs for the fee profile
+          items:
+            $ref: '#/components/schemas/BankingFeeConfig'
+          type: array
+        id:
+          description: The id of the fee profile
+          format: uuid
+          type: string
+        iron_fee:
+          $ref: '#/components/schemas/FeeSchedule'
+        iron_fee_settlement:
+          $ref: '#/components/schemas/FeeSettlement'
+        min_fee:
+          $ref: '#/components/schemas/Amount'
+        name:
+          description: The name of the fee profile
+          type: string
+        network_fee_enabled:
+          description: The network fee enabled flag
+          type: boolean
+        non_transactional_partner_fee_configs:
+          description: The non-transactional partner fees for the fee profile
+          items:
+            $ref: '#/components/schemas/NonTransactionalPartnerFeeConfig'
+          type: array
+        partner_fee_configs:
+          description: The additional partner fees for the fee profile
+          items:
+            $ref: '#/components/schemas/PartnerFeeConfig'
+          type: array
+        partner_id:
+          description: The Id of the partner
+          format: uuid
+          type: string
+      required:
+      - id
+      - name
+      - partner_id
+      - iron_fee
+      - iron_fee_settlement
+      - min_fee
+      - network_fee_enabled
+      - partner_fee_configs
+      - banking_fee_configs
+      - non_transactional_partner_fee_configs
+      title: FeeProfile
+      type: object
+    FeeSchedule:
+      anyOf:
+      - $ref: '#/components/schemas/FeeSchedule_BipsFeeRequest'
+      - $ref: '#/components/schemas/FeeSchedule_VariableFee'
+      description: |
+        Fee Schedule
+
+        The Schedule of Fees associated with a Partner
+      discriminator:
+        mapping:
+          bips: '#/components/schemas/FeeSchedule_BipsFeeRequest'
+          tiered: '#/components/schemas/FeeSchedule_VariableFee'
+        propertyName: type
+      type: object
+    FeeSchedule_BipsFeeRequest:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - bips
+            example: bips
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/BipsFeeRequest'
+      description: |
+        Fee Schedule
+
+        The Schedule of Fees associated with a Partner
+    FeeSchedule_VariableFee:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - tiered
+            example: tiered
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/VariableFee'
+      description: |
+        Fee Schedule
+
+        The Schedule of Fees associated with a Partner
+    FeeSettlement:
+      description: |
+        Fee Settlement
+
+        The settlement type for the fee
+      enum:
+      - deductedImmediately
+      - settledLater
+      type: string
+    Fiat:
+      description: A fiat currency
+      example:
+        code: USD
+      properties:
+        code:
+          description: The code of the currency e.g. 'USD'
+          type: string
+      required:
+      - code
+      title: Fiat
+      type: object
+    FiatAccount:
+      description: |
+        Fiat Account
+
+        The fiat account for the autoramp
+      properties:
+        account_identifier:
+          $ref: '#/components/schemas/BankAccountIdentifier'
+      required:
+      - account_identifier
+      title: FiatAccount
+      type: object
+    FiatAddress:
+      description: |
+        Fiat Address
+
+        Response containing fiat address details
+      properties:
+        bank_account_identifier:
+          $ref: '#/components/schemas/BankAccountIdentifier'
+        bank_details:
+          $ref: '#/components/schemas/RecipientBankAccount'
+        bank_name:
+          description: The bank name
+          type: string
+        country:
+          description: The country code
+          type: string
+        created_at:
+          description: When the address was created
+          format: date-time
+          type: string
+        currency:
+          description: The currency of the bank account
+          type: string
+        customer_id:
+          description: The customer ID
+          format: uuid
+          type: string
+        id:
+          description: The ID of the address
+          format: uuid
+          type: string
+        is_third_party:
+          description: Is this a third party fiat address
+          type: boolean
+        label:
+          description: Optional label for the address
+          type: string
+        ownership_verified:
+          description: Has the customer verified their ownership of this account
+          type: boolean
+        status:
+          $ref: '#/components/schemas/FiatAddressStatus'
+        updated_at:
+          description: When the address was last updated
+          format: date-time
+          type: string
+      required:
+      - id
+      - created_at
+      - updated_at
+      - customer_id
+      - bank_details
+      - status
+      - currency
+      - bank_account_identifier
+      - country
+      - bank_name
+      - ownership_verified
+      - is_third_party
+      title: FiatAddress
+      type: object
+    FiatAddressStatus:
+      description: |
+        Verification Status
+
+        The status of the verification of a fiat address
+      enum:
+      - AuthorizationRequired
+      - AuthorizationFailed
+      - RegistrationPending
+      - RegistrationFailed
+      - Registered
+      type: string
+    FiatCurrency:
+      properties:
+        code:
+          description: The ISO 4217 code of a currency. E.g. `EUR`
+          type: string
+        countries:
+          description: A list of all the countries where this currency is supported
+          items:
+            $ref: '#/components/schemas/Country'
+          type: array
+        name:
+          description: The user readable name of a currency. E.g. `Euro`
+          type: string
+      required:
+      - code
+      - name
+      - countries
+      title: FiatCurrency
+      type: object
+    FiatTransfer:
+      description: |
+        Fiat Transfer
+
+        The type of fiat transfer
+      enum:
+      - PayIn
+      - PayOut
+      type: string
+    Iban:
+      properties:
+        iban:
+          type: string
+      required:
+      - iban
+      title: Iban
+      type: object
+    IbanDepositInfo:
+      properties:
+        address:
+          type: string
+        bic:
+          type: string
+        iban:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+      required:
+      - iban
+      title: IbanDepositInfo
+      type: object
+    Identification:
+      description: |
+        Identification
+
+        The entity wrapping our KYC/KYB process and underlying providers
+      properties:
+        created_at:
+          format: date-time
+          type: string
+        id:
+          format: uuid
+          type: string
+        status:
+          $ref: '#/components/schemas/IdentificationStatus'
+        updated_at:
+          format: date-time
+          type: string
+        url:
+          type: string
+      required:
+      - id
+      - status
+      - created_at
+      - updated_at
+      title: Identification
+      type: object
+    IdentificationCreateParams:
+      anyOf:
+      - $ref: '#/components/schemas/OutsourcedPersonParams'
+      - $ref: '#/components/schemas/OutsourcedBusinessParams'
+      - $ref: '#/components/schemas/ReliancePersonParams'
+      description: |
+        Identification Create Params
+
+        The params required to create an identification, we support two types of identification:
+        - Outsourced: where data is provided in the request
+        - Direct: where we will trigger a verification using our providers built in flows for data collection
+      type: object
+    IdentificationStatus:
+      description: |
+        The Process status of the identification
+
+        The various state transitions an identification can go through.
+      enum:
+      - Pending
+      - Processed
+      - PendingReview
+      - Approved
+      - Declined
+      type: string
+    IdentityDocument:
+      description: |
+        Identity Document
+
+        A base64 document that can be used to identify the business
+      properties:
+        file:
+          description: base64 encoded document without prefix (5MB max)
+          type: string
+        name:
+          description: The name of the document with the file extension
+          type: string
+        type:
+          $ref: '#/components/schemas/DocumentType'
+      required:
+      - name
+      - file
+      - type
+      title: IdentityDocument
+      type: object
+    IdentityDocumentType:
+      description: |
+        Identity Document Type
+
+        The type of identity document useful to KYB process
+      enum:
+      - Passport
+      - NationalId
+      type: string
+    IndividualName:
+      properties:
+        family_name:
+          type: string
+        given_name:
+          type: string
+      required:
+      - given_name
+      - family_name
+      title: IndividualName
+      type: object
+    MobileMoneyDepositInfo:
+      properties:
+        instruction:
+          type: string
+        mobile_number:
+          type: string
+      required:
+      - mobile_number
+      title: MobileMoneyDepositInfo
+      type: object
+    NetworkFee:
+      anyOf:
+      - $ref: '#/components/schemas/NetworkFee_Amount'
+      - $ref: '#/components/schemas/NetworkFee_Amount'
+      - $ref: '#/components/schemas/NetworkFee_Amount'
+      - $ref: '#/components/schemas/NetworkFee_Amount'
+      - $ref: '#/components/schemas/NetworkFee_Amount'
+      - $ref: '#/components/schemas/NetworkFee_Amount'
+      description: |
+        Network Fee
+
+        The network fee for a given currency
+      discriminator:
+        mapping:
+          Ach: '#/components/schemas/NetworkFee_Amount'
+          EthereumGas: '#/components/schemas/NetworkFee_Amount'
+          RailFee: '#/components/schemas/NetworkFee_Amount'
+          SepaIn: '#/components/schemas/NetworkFee_Amount'
+          SepaOut: '#/components/schemas/NetworkFee_Amount'
+          SolanaTransactionFee: '#/components/schemas/NetworkFee_Amount'
+        propertyName: type
+      type: object
+    NetworkFee_Amount:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Ach
+            example: Ach
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/Amount'
+      description: |
+        Network Fee
+
+        The network fee for a given currency
+    NonTransactionalPartnerFeeConfig:
+      description: |
+        Non-Transactional Partner Fee Config
+
+        A non-transactional partner fee config
+      properties:
+        billing_type:
+          $ref: '#/components/schemas/BillingType'
+        fee_type:
+          $ref: '#/components/schemas/PartnerFeeType'
+        label:
+          description: The label of the non-transactional partner fee
+          type: string
+      required:
+      - label
+      - fee_type
+      - billing_type
+      title: NonTransactionalPartnerFeeConfig
+      type: object
+    Occupation:
+      description: |
+        Occupation
+
+        The occupation of the person
+      enum:
+      - FinanceAndAccounting
+      - EducationAndTeaching
+      - TechnologyAndIT
+      - DesignAndCreativeArts
+      - ConstructionAndBuilding
+      - TransportationAndLogistics
+      - ManufacturingAndProduction
+      - ScienceAndResearch
+      - LegalAndLawServices
+      - PsychologyAndMentalHealth
+      - EntertainmentAndMedia
+      - MaintenanceAndRepair
+      - PublicServices
+      - GeneralManagementAndOperations
+      - Other
+      type: string
+    OutsourcedBusinessParams:
+      description: |
+        Business Profile
+
+        The business data required for iron to perform KYB
+      properties:
+        addresses:
+          description: Addresses associated with the business
+          items:
+            $ref: '#/components/schemas/Address'
+          type: array
+        business_entity_id:
+          description: Entity ID given by the government to the business
+          type: string
+        business_officers:
+          items:
+            $ref: '#/components/schemas/BusinessOfficer'
+          type: array
+        country_code:
+          description: 2 letter ISO country code
+          type: string
+        current_activities:
+          $ref: '#/components/schemas/BusinessProfileCurrentActivities'
+        documents:
+          description: Documents associated with the business
+          items:
+            $ref: '#/components/schemas/IdentityDocument'
+          type: array
+        email_addresses:
+          description: emails associated with the business
+          items:
+            type: string
+          type: array
+        formation_date:
+          description: The formation date in YYYY-MM-DD format
+          type: string
+        ip_address:
+          description: ip address used to initiate the business profile
+          type: string
+        name:
+          description: The business name. (Legal name preferred)
+          type: string
+        phone_numbers:
+          description: phone numbers associated with the business
+          items:
+            type: string
+          type: array
+        planned_activities:
+          $ref: '#/components/schemas/BusinessProfilePlannedActivities'
+        related_companies:
+          description: companies related to the business who have an ownership interest
+          items:
+            $ref: '#/components/schemas/RelatedCompany'
+          type: array
+        state_code:
+          description: State Code of the province/region where business is primarily registered.
+          type: string
+        tax_identification_number:
+          description: The tax identification number of the business
+          type: string
+        website:
+          description: The website of the business
+          type: string
+      required:
+      - name
+      - tax_identification_number
+      - website
+      - formation_date
+      - country_code
+      - state_code
+      - business_entity_id
+      - addresses
+      - phone_numbers
+      - email_addresses
+      - current_activities
+      - planned_activities
+      - business_officers
+      - documents
+      - related_companies
+      - ip_address
+      title: OutsourcedBusinessParams
+      type: object
+    OutsourcedPersonParams:
+      description: |
+        Outsourced Person Params
+
+        The parameters for an outsourced person identification
+      properties:
+        address:
+          $ref: '#/components/schemas/Address'
+        consent_collected_at:
+          description: |-
+            Date and time when explicit consent was given to share identity
+            timestamp must be UTC timestamp e.g. 2025-02-01T15:38:21.775210Z
+          type: string
+        date_of_birth:
+          description: date of birth in YYYY-MM-DD format
+          type: string
+        documents:
+          description: documents associated with the person
+          items:
+            $ref: '#/components/schemas/IdentityDocument'
+          type: array
+        email_address:
+          description: email address of the person
+          type: string
+        first_name:
+          description: The first name of the person
+          type: string
+        full_name:
+          description: the full name of the person
+          type: string
+        identity:
+          $ref: '#/components/schemas/PersonIdentity'
+        last_name:
+          description: The last name of the person
+          type: string
+        person_questions:
+          $ref: '#/components/schemas/PersonProfileQuestions'
+        phone_number:
+          description: phone number of the person (international format with leading +)
+          type: string
+        sharing_consent:
+          description: explicitly given consent to share identity information with iron
+          type: boolean
+        tax_identification_number:
+          description: |-
+            tax identification number of the person
+            if person is US-based please provide
+          type: string
+      required:
+      - first_name
+      - last_name
+      - full_name
+      - date_of_birth
+      - address
+      - email_address
+      - phone_number
+      - sharing_consent
+      - consent_collected_at
+      - identity
+      title: OutsourcedPersonParams
+      type: object
+    PagedList_Autoramp:
+      description: |
+        PagedList
+
+        A list of items with a cursor used to fetch the next page
+      properties:
+        cursor:
+          description: The cursor used to fetch the next page
+          format: uuid
+          type: string
+        items:
+          description: The list of items
+          items:
+            $ref: '#/components/schemas/Autoramp'
+          type: array
+      required:
+      - items
+      title: PagedList_Autoramp
+      type: object
+    PagedList_AutorampTransaction:
+      description: |
+        PagedList
+
+        A list of items with a cursor used to fetch the next page
+      properties:
+        cursor:
+          description: The cursor used to fetch the next page
+          format: uuid
+          type: string
+        items:
+          description: The list of items
+          items:
+            $ref: '#/components/schemas/AutorampTransaction'
+          type: array
+      required:
+      - items
+      title: PagedList_AutorampTransaction
+      type: object
+    PagedList_Customer:
+      description: |
+        PagedList
+
+        A list of items with a cursor used to fetch the next page
+      properties:
+        cursor:
+          description: The cursor used to fetch the next page
+          format: uuid
+          type: string
+        items:
+          description: The list of items
+          items:
+            $ref: '#/components/schemas/Customer'
+          type: array
+      required:
+      - items
+      title: PagedList_Customer
+      type: object
+    PagedList_Document:
+      description: |
+        PagedList
+
+        A list of items with a cursor used to fetch the next page
+      properties:
+        cursor:
+          description: The cursor used to fetch the next page
+          format: uuid
+          type: string
+        items:
+          description: The list of items
+          items:
+            $ref: '#/components/schemas/Document'
+          type: array
+      required:
+      - items
+      title: PagedList_Document
+      type: object
+    PagedList_FeeProfile:
+      description: |
+        PagedList
+
+        A list of items with a cursor used to fetch the next page
+      properties:
+        cursor:
+          description: The cursor used to fetch the next page
+          format: uuid
+          type: string
+        items:
+          description: The list of items
+          items:
+            $ref: '#/components/schemas/FeeProfile'
+          type: array
+      required:
+      - items
+      title: PagedList_FeeProfile
+      type: object
+    PagedList_FiatAddress:
+      description: |
+        PagedList
+
+        A list of items with a cursor used to fetch the next page
+      properties:
+        cursor:
+          description: The cursor used to fetch the next page
+          format: uuid
+          type: string
+        items:
+          description: The list of items
+          items:
+            $ref: '#/components/schemas/FiatAddress'
+          type: array
+      required:
+      - items
+      title: PagedList_FiatAddress
+      type: object
+    PagedList_Identification:
+      description: |
+        PagedList
+
+        A list of items with a cursor used to fetch the next page
+      properties:
+        cursor:
+          description: The cursor used to fetch the next page
+          format: uuid
+          type: string
+        items:
+          description: The list of items
+          items:
+            $ref: '#/components/schemas/Identification'
+          type: array
+      required:
+      - items
+      title: PagedList_Identification
+      type: object
+    PagedList_Signing:
+      description: |
+        PagedList
+
+        A list of items with a cursor used to fetch the next page
+      properties:
+        cursor:
+          description: The cursor used to fetch the next page
+          format: uuid
+          type: string
+        items:
+          description: The list of items
+          items:
+            $ref: '#/components/schemas/Signing'
+          type: array
+      required:
+      - items
+      title: PagedList_Signing
+      type: object
+    PagedList_Webhook:
+      description: |
+        PagedList
+
+        A list of items with a cursor used to fetch the next page
+      properties:
+        cursor:
+          description: The cursor used to fetch the next page
+          format: uuid
+          type: string
+        items:
+          description: The list of items
+          items:
+            $ref: '#/components/schemas/Webhook'
+          type: array
+      required:
+      - items
+      title: PagedList_Webhook
+      type: object
+    PartnerFee:
+      description: |
+        Partner Fee
+
+        A partner fee
+      properties:
+        fee:
+          $ref: '#/components/schemas/Amount'
+        label:
+          description: The label of the partner fee
+          type: string
+        settlement:
+          $ref: '#/components/schemas/FeeSettlement'
+      required:
+      - label
+      - fee
+      - settlement
+      title: PartnerFee
+      type: object
+    PartnerFeeConfig:
+      description: |-
+        Partner Fee
+
+        A partner fee config which is deducted immediately from the transaction amount
+
+        A Partner Fee
+      properties:
+        billing_type:
+          $ref: '#/components/schemas/BillingType'
+        fee_type:
+          $ref: '#/components/schemas/PartnerFeeType'
+        label:
+          description: The label of the partner fee
+          type: string
+      required:
+      - label
+      - fee_type
+      - billing_type
+      title: PartnerFeeConfig
+      type: object
+    PartnerFeeType:
+      anyOf:
+      - $ref: '#/components/schemas/PartnerFeeType_Amount'
+      - $ref: '#/components/schemas/PartnerFeeType_BipsFeeRequest'
+      description: |-
+        Partner Fee Type
+
+        The type of partner fee
+
+        A Partner Fee Type
+      discriminator:
+        mapping:
+          Bips: '#/components/schemas/PartnerFeeType_BipsFeeRequest'
+          Fixed: '#/components/schemas/PartnerFeeType_Amount'
+        propertyName: type
+      type: object
+    PartnerFeeType_Amount:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Fixed
+            example: Fixed
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/Amount'
+      description: |-
+        Partner Fee Type
+
+        The type of partner fee
+
+        A Partner Fee Type
+    PartnerFeeType_BipsFeeRequest:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Bips
+            example: Bips
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/BipsFeeRequest'
+      description: |-
+        Partner Fee Type
+
+        The type of partner fee
+
+        A Partner Fee Type
+    PatchAutorampMarketParameters:
+      description: |
+        Patch Autoramp Market Parameters
+
+        The parameters for patching the autoramp market
+      properties:
+        customer_id:
+          format: uuid
+          type: string
+        destination_currency:
+          $ref: '#/components/schemas/Currency'
+        recipient_account:
+          $ref: '#/components/schemas/Account'
+      required:
+      - customer_id
+      title: PatchAutorampMarketParameters
+      type: object
+    PaymentNetwork:
+      description: |
+        PaymentNetwork
+
+        A payment network
+      enum:
+      - Sepa
+      - Swift
+      - Fps
+      - Chats
+      - Ach
+      - Wire
+      - Pix
+      - Spei
+      - AfricanBankTransfer
+      - MobileMoney
+      type: string
+    PersonIdentity:
+      description: |
+        Person Identity
+
+        The required identity information of a person
+      properties:
+        identity_country_code:
+          description: A 2-letter ISO country code of the identity number or identity document being submitted. (ISO 3166)
+          type: string
+        identity_document_back:
+          description: base64 encoded image of ident document back without prefix (5MB max)
+          type: string
+        identity_document_front:
+          description: base64 encoded image of ident document front without prefix (5MB max)
+          type: string
+        identity_document_type:
+          $ref: '#/components/schemas/IdentityDocumentType'
+        identity_number:
+          description: The identity number or identity document being submitted.
+          type: string
+        ip_address:
+          description: ip address of device used to collect selfie
+          type: string
+        selfie:
+          description: base64 encoded image of selfie without prefix (5MB max)
+          type: string
+        selfie_collected_at:
+          description: timestamp in ISO 8601 format
+          type: string
+      required:
+      - identity_country_code
+      - identity_number
+      - identity_document_type
+      - identity_document_front
+      - identity_document_back
+      - selfie
+      - selfie_collected_at
+      - ip_address
+      title: PersonIdentity
+      type: object
+    PersonProfileExpectedMonthlyTransactionVolume:
+      description: |
+        Expected Monthly Transaction Volume
+
+        The expected monthly transaction volume of the person
+      enum:
+      - LessThan1000
+      - Between1000And5000
+      - Between5000And10000
+      - Between10000And20000
+      - Over20000
+      type: string
+    PersonProfileMonthlyIncome:
+      description: |
+        Monthly Income
+
+        The monthly income of the person
+      enum:
+      - Between1000And2000
+      - Between2000And3000
+      - Between3000And5000
+      - Between5000And10000
+      - Over10000
+      type: string
+    PersonProfileQuestions:
+      description: |
+        Person Profile Questions
+
+        The compliance questions persons are required to respond to
+      properties:
+        employment_status:
+          $ref: '#/components/schemas/EmploymentStatus'
+        expected_monthly_transaction_volume:
+          $ref: '#/components/schemas/PersonProfileExpectedMonthlyTransactionVolume'
+        monthly_income:
+          $ref: '#/components/schemas/PersonProfileMonthlyIncome'
+        occupation:
+          $ref: '#/components/schemas/Occupation'
+        pep_relationships:
+          description: has the person or any immediate family membersclose associates held, or are you currently holding, a prominent public position in any government or state institution within the past year?
+          items:
+            type: string
+          type: array
+        source_of_funds:
+          $ref: '#/components/schemas/PersonProfileSourceOfFunds'
+      required:
+      - pep_relationships
+      title: PersonProfileQuestions
+      type: object
+    PersonProfileSourceOfFunds:
+      description: |
+        Source of Funds
+
+        The sources of funds for a person
+      enum:
+      - SalaryAndWages
+      - PersonalSavings
+      - PensionOrRetirementPayments
+      - ProceedsFromSellingAssets
+      - CryptocurrenyTradingOrInvestment
+      - InvestmentReturns
+      - GamblingOrLotteryWinnings
+      - GiftOrInheritanceReceived
+      - LoanFromBankOrOtherFinancialInstitution
+      type: string
+    PingWebhookParams:
+      properties:
+        customer_id:
+          description: Customer ID to use for the webhook ping
+          format: uuid
+          type: string
+      required:
+      - customer_id
+      title: PingWebhookParams
+      type: object
+    PixDepositInfo:
+      properties:
+        instruction:
+          type: string
+        pix_key:
+          type: string
+      required:
+      - pix_key
+      - instruction
+      title: PixDepositInfo
+      type: object
+    PostalAddress:
+      description: |
+        PostalAddress
+
+        A postal address
+      properties:
+        city:
+          description: The city
+          type: string
+        country:
+          $ref: '#/components/schemas/Country'
+        postal_code:
+          description: The postal code
+          type: string
+        state:
+          description: The state
+          type: string
+        street:
+          description: The street address
+          type: string
+      required:
+      - street
+      - city
+      - state
+      - country
+      - postal_code
+      title: PostalAddress
+      type: object
+    RampTransactionSource:
+      anyOf:
+      - $ref: '#/components/schemas/ApiWalletDepositSource'
+      - $ref: '#/components/schemas/ApiBankAccountSource'
+      description: The source of the autoramp transaction
+      type: object
+    RateExpiryPolicy:
+      description: |
+        Rate Expiry Policy
+
+        The policy for the rate expiry
+      enum:
+      - Return
+      - Slippage
+      type: string
+    Recipient:
+      anyOf:
+      - $ref: '#/components/schemas/Recipient_RecipientBankAccount'
+      - $ref: '#/components/schemas/Recipient_RecipientWallet'
+      - $ref: '#/components/schemas/Recipient_RecipientPix'
+      description: |
+        Recipient
+
+        The recipient of the payment
+      discriminator:
+        mapping:
+          BankAccount: '#/components/schemas/Recipient_RecipientBankAccount'
+          Pix: '#/components/schemas/Recipient_RecipientPix'
+          Wallet: '#/components/schemas/Recipient_RecipientWallet'
+        propertyName: type
+      type: object
+    RecipientBankAccount:
+      description: |
+        RecipientBankAccount
+
+        A recipient fiat bank account
+      properties:
+        account_identifier:
+          $ref: '#/components/schemas/BankAccountIdentifier'
+        address:
+          $ref: '#/components/schemas/PostalAddress'
+        email_address:
+          $ref: '#/components/schemas/EmailAddress'
+        id:
+          description: The recipient's account id
+          type: string
+        is_third_party:
+          description: Is this a users fiat bank account or a third party fiat bank account
+          type: boolean
+        phone_number:
+          description: The recipient's phone number
+          type: string
+        provider_country:
+          $ref: '#/components/schemas/Country'
+        provider_name:
+          description: The name of the provider of the recipient's account
+          type: string
+        recipient:
+          $ref: '#/components/schemas/RecipientName'
+      required:
+      - id
+      - recipient
+      - provider_name
+      - provider_country
+      - account_identifier
+      - address
+      - is_third_party
+      title: RecipientBankAccount
+      type: object
+    RecipientName:
+      anyOf:
+      - $ref: '#/components/schemas/RecipientName_IndividualName'
+      - $ref: '#/components/schemas/RecipientName_BusinessName'
+      discriminator:
+        mapping:
+          Business: '#/components/schemas/RecipientName_BusinessName'
+          Individual: '#/components/schemas/RecipientName_IndividualName'
+        propertyName: type
+      type: object
+    RecipientName_BusinessName:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Business
+            example: Business
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/BusinessName'
+    RecipientName_IndividualName:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Individual
+            example: Individual
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/IndividualName'
+    RecipientPix:
+      description: |
+        RecipientPix
+
+        Pix payment network recipient
+      properties:
+        pix_key:
+          description: The pix key
+          type: string
+      required:
+      - pix_key
+      title: RecipientPix
+      type: object
+    RecipientWallet:
+      description: |
+        RecipientWallet
+
+        An on-chain wallet address
+      properties:
+        address:
+          description: The wallet address
+          type: string
+        blockchain:
+          $ref: '#/components/schemas/Blockchain'
+      required:
+      - blockchain
+      - address
+      title: RecipientWallet
+      type: object
+    Recipient_RecipientBankAccount:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - BankAccount
+            example: BankAccount
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/RecipientBankAccount'
+      description: |
+        Recipient
+
+        The recipient of the payment
+    Recipient_RecipientPix:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Pix
+            example: Pix
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/RecipientPix'
+      description: |
+        Recipient
+
+        The recipient of the payment
+    Recipient_RecipientWallet:
+      allOf:
+      - properties:
+          type:
+            enum:
+            - Wallet
+            example: Wallet
+            type: string
+        required:
+        - type
+        type: object
+      - $ref: '#/components/schemas/RecipientWallet'
+      description: |
+        Recipient
+
+        The recipient of the payment
+    RegisterFiatAddressRequest:
+      description: |
+        Register Fiat Address Request
+
+        Request to register a fiat (bank) address
+      properties:
+        bank_details:
+          $ref: '#/components/schemas/RecipientBankAccount'
+        currency:
+          $ref: '#/components/schemas/Fiat'
+        customer_id:
+          description: The customer ID
+          format: uuid
+          type: string
+        label:
+          description: Optional label for the address
+          type: string
+      required:
+      - customer_id
+      - bank_details
+      - currency
+      title: RegisterFiatAddressRequest
+      type: object
+    RegisterHostedWalletRequest:
+      description: |
+        Register a hosted wallet address
+
+        Request to register a hosted wallet address with its travel rule details
+      properties:
+        blockchain:
+          $ref: '#/components/schemas/Blockchain'
+        customer_id:
+          description: The customer ID
+          format: uuid
+          type: string
+        first_name:
+          description: The first name associated with the wallet
+          type: string
+        last_name:
+          description: The last name associated with the wallet
+          type: string
+        legal_name:
+          description: The legal name associated with the wallet
+          type: string
+        travel_address:
+          description: |-
+            The travel rule address for compliance, as defined in travel rule protocol specifications: https://gitlab.com/OpenVASP/travel-rule-protocol
+            example: taGGjX....n4D
+          type: string
+        wallet_address:
+          description: The wallet address at the institution
+          type: string
+      required:
+      - customer_id
+      - wallet_address
+      - travel_address
+      - blockchain
+      title: RegisterHostedWalletRequest
+      type: object
+    RegisterSelfHostedWalletRequest:
+      description: |
+        Submit Wallet Proof Request
+
+        Request to submit a proof of wallet ownership
+      properties:
+        address:
+          description: The address of the wallet
+          type: string
+        blockchain:
+          $ref: '#/components/schemas/Blockchain'
+        customer_id:
+          description: The customer ID
+          format: uuid
+          type: string
+        message:
+          description: The message that was signed
+          type: string
+        signature:
+          description: The signature of the message
+          type: string
+      required:
+      - blockchain
+      - customer_id
+      - address
+      - signature
+      - message
+      title: RegisterSelfHostedWalletRequest
+      type: object
+    RelatedCompany:
+      description: |
+        Related Company
+
+        A company related to the business who has an ownership interest
+      properties:
+        country_code:
+          description: 2 letter ISO country code
+          type: string
+        name:
+          description: the name of the related company
+          type: string
+        ownership_percent:
+          description: ownership percentage of the business to nearest integer
+          format: int32
+          type: integer
+        related_company_details:
+          $ref: '#/components/schemas/RelatedCompanyDetails'
+        shares_allocated:
+          description: shares allocated to the business officer to nearest integer
+          format: int32
+          type: integer
+        state_code:
+          description: State Code of the province/region where business is primarily registered.
+          type: string
+        tax_identification_number:
+          description: Entity ID given by the government to the business
+          type: string
+        website:
+          description: website of the related company
+          type: string
+      required:
+      - name
+      - country_code
+      - state_code
+      - ownership_percent
+      - shares_allocated
+      - tax_identification_number
+      - website
+      - related_company_details
+      title: RelatedCompany
+      type: object
+    RelatedCompanyDetails:
+      description: |
+        Related Company Details
+
+        The details of a companies related to the business as shareholders
+      properties:
+        addresses:
+          description: The addresses of the related company
+          items:
+            $ref: '#/components/schemas/Address'
+          type: array
+        business_entity_id:
+          description: The business entity ID of the related company
+          type: string
+        country_code:
+          description: The country code of the related company
+          type: string
+        email_addresses:
+          description: The email addresses of the related company
+          items:
+            type: string
+          type: array
+        formation_date:
+          description: The formation date of the related company
+          type: string
+        name:
+          description: The name of the related company
+          type: string
+        phone_numbers:
+          description: The phone numbers of the related company
+          items:
+            type: string
+          type: array
+        state_code:
+          description: The state code of the related company
+          type: string
+        tax_identification_number:
+          description: The tax identification number of the related company
+          type: string
+        website:
+          description: The website of the related company
+          type: string
+      required:
+      - name
+      - tax_identification_number
+      - website
+      - formation_date
+      - country_code
+      - state_code
+      - business_entity_id
+      - addresses
+      - phone_numbers
+      - email_addresses
+      title: RelatedCompanyDetails
+      type: object
+    RelianceHighRiskQuestionnaire:
+      description: |
+        Reliance High Risk Questionnaire
+
+        The questionnaire for a reliance person identification
+      properties:
+        employment_status:
+          $ref: '#/components/schemas/EmploymentStatus'
+        expected_monthly_volume:
+          $ref: '#/components/schemas/PersonProfileExpectedMonthlyTransactionVolume'
+        monthly_income:
+          $ref: '#/components/schemas/PersonProfileMonthlyIncome'
+        source_of_funds:
+          $ref: '#/components/schemas/PersonProfileSourceOfFunds'
+        source_of_funds_proof:
+          description: A document service as proof of source of funds (encoded as base64)
+          type: string
+      required:
+      - employment_status
+      - monthly_income
+      - expected_monthly_volume
+      - source_of_funds
+      - source_of_funds_proof
+      title: RelianceHighRiskQuestionnaire
+      type: object
+    RelianceMediumRiskQuestionnaire:
+      description: |
+        Reliance Medium Risk Questionnaire
+
+        The questionnaire for a reliance person identification
+      properties:
+        employment_status:
+          $ref: '#/components/schemas/EmploymentStatus'
+        expected_monthly_volume:
+          $ref: '#/components/schemas/PersonProfileExpectedMonthlyTransactionVolume'
+        monthly_income:
+          $ref: '#/components/schemas/PersonProfileMonthlyIncome'
+        source_of_funds:
+          $ref: '#/components/schemas/PersonProfileSourceOfFunds'
+      required:
+      - employment_status
+      - monthly_income
+      - expected_monthly_volume
+      - source_of_funds
+      title: RelianceMediumRiskQuestionnaire
+      type: object
+    ReliancePersonParams:
+      description: |
+        Reliance Person Params
+
+        The parameters for a reliance person identification
+      properties:
+        high_risk_questionnaire:
+          $ref: '#/components/schemas/RelianceHighRiskQuestionnaire'
+        ip_address:
+          description: The IP address of the person
+          type: string
+        medium_risk_questionnaire:
+          $ref: '#/components/schemas/RelianceMediumRiskQuestionnaire'
+        token:
+          description: The shareable token generated by the third party provider
+          type: string
+      required:
+      - token
+      title: ReliancePersonParams
+      type: object
+    Role:
+      description: |
+        Role
+
+        A role in the iron system.
+      enum:
+      - viewer
+      - editor
+      - admin
+      - superadmin
+      type: string
+    SelfHostedWalletResponse:
+      description: |
+        Self-Hosted Wallet Response
+
+        Response containing self-hosted wallet details
+      properties:
+        address:
+          description: The address that was proven
+          type: string
+        created_at:
+          description: When the wallet was registered
+          format: date-time
+          type: string
+        customer_id:
+          description: The customer ID
+          type: string
+        disabled:
+          description: Whether the address is disabled
+          type: boolean
+        id:
+          description: The ID of the self-hosted wallet
+          type: string
+        signature:
+          description: The signature that was submitted
+          type: string
+      required:
+      - id
+      - address
+      - signature
+      - created_at
+      - customer_id
+      - disabled
+      title: SelfHostedWalletResponse
+      type: object
+    SignedAutorampQuote:
+      description: |
+        Signed Autoramp Quote
+
+        The signed autoramp quote
+      properties:
+        amount_in:
+          $ref: '#/components/schemas/Amount'
+        amount_out:
+          $ref: '#/components/schemas/Amount'
+        customer_id:
+          description: The customer id
+          format: uuid
+          type: string
+        deposit_account_type:
+          $ref: '#/components/schemas/DepositAccountType'
+        destination_currency:
+          $ref: '#/components/schemas/Currency'
+        external_id:
+          description: The external id
+          type: string
+        fee:
+          $ref: '#/components/schemas/Fee'
+        fee_settlement:
+          $ref: '#/components/schemas/FeeSettlement'
+        is_third_party:
+          description: Is this a third party autoramp
+          type: boolean
+        quote_id:
+          description: The id of the quote
+          format: uuid
+          type: string
+        rate:
+          description: The rate
+          format: decimal
+          type: string
+        rate_expiry_policy:
+          $ref: '#/components/schemas/RateExpiryPolicy'
+        rate_lock_valid_until:
+          description: The rate lock valid until
+          format: date-time
+          type: string
+        recipient_account:
+          $ref: '#/components/schemas/Account'
+        signature:
+          description: The signature
+          type: string
+        slippage_tolerance_in_bips:
+          description: The slippage tolerance in bips
+          format: decimal
+          type: string
+        source_currency:
+          $ref: '#/components/schemas/Currency'
+        valid_until:
+          description: The valid until
+          format: date-time
+          type: string
+      required:
+      - quote_id
+      - source_currency
+      - destination_currency
+      - recipient_account
+      - customer_id
+      - amount_in
+      - amount_out
+      - rate
+      - rate_expiry_policy
+      - fee
+      - fee_settlement
+      - valid_until
+      - signature
+      - is_third_party
+      title: SignedAutorampQuote
+      type: object
+    Signing:
+      description: |
+        Signing
+
+        A signing of a document by a customer
+      properties:
+        created_at:
+          description: created_at timestamp of Signing
+          format: date-time
+          type: string
+        customer_id:
+          description: unique UUID of the Customer who signed
+          format: uuid
+          type: string
+        document_id:
+          description: unique UUID of the Document signed by Customer
+          format: uuid
+          type: string
+        id:
+          description: unique UUID of Signing
+          format: uuid
+          type: string
+        updated_at:
+          description: updated_at timestamp of Signing
+          format: date-time
+          type: string
+      required:
+      - id
+      - customer_id
+      - document_id
+      - created_at
+      - updated_at
+      title: Signing
+      type: object
+    SigningCreateParams:
+      description: Params for Creating a Signing
+      example:
+        document_id: ca6db3de-a7ac-4d59-99bb-427477d788b2
+        signed: true
+      properties:
+        document_id:
+          description: ID of the document signed
+          format: uuid
+          type: string
+        signed:
+          description: Explicit signing consent
+          type: boolean
+      required:
+      - signed
+      - document_id
+      title: SigningCreateParams
+      type: object
+    SignupToken:
+      description: |
+        A signup token
+
+        This is used to create a new user for a partner or customer
+      properties:
+        customer_app_access:
+          description: Wether customers owned by the partner have access to the partner area application
+          type: boolean
+        entity_id:
+          description: The partner for which this customer should be onboarded
+          format: uuid
+          type: string
+        entity_type:
+          $ref: '#/components/schemas/SignupTokenEntityType'
+        id:
+          description: The id of the signup token
+          format: uuid
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        token:
+          description: The onboarding token
+          type: string
+        url:
+          description: |-
+            The full URL for the customer to use for onboarding. Includes the above token.
+            This URL can be shared verbatim with the customer.
+          type: string
+      required:
+      - id
+      - entity_id
+      - entity_type
+      - token
+      - url
+      - role
+      - customer_app_access
+      title: SignupToken
+      type: object
+    SignupTokenEntityType:
+      description: The entity the token is related to
+      enum:
+      - Partner
+      - Customer
+      - TeamUser
+      type: string
+    SpeiDepositInfo:
+      properties:
+        clabe:
+          type: string
+        instruction:
+          type: string
+      required:
+      - clabe
+      - instruction
+      title: SpeiDepositInfo
+      type: object
+    SubmitAuthenticationCodeParams:
+      description: |
+        Authentication Code Params
+
+        Parameters for submitting an authentication code
+      properties:
+        code:
+          description: The code to submit
+          format: int32
+          type: integer
+      required:
+      - code
+      title: SubmitAuthenticationCodeParams
+      type: object
+    TieredFee:
+      description: |
+        Tiered Fee
+
+        A Tiered Fee associated with a Partner based on volume thresholds
+      properties:
+        fee_value_in_bips:
+          description: Fee value for this tier as a percentage in bips
+          format: uint32
+          type: integer
+        volume_threshold:
+          description: Minimum volume required to qualify for this fee tier
+          format: decimal
+          type: string
+      required:
+      - volume_threshold
+      - fee_value_in_bips
+      title: TieredFee
+      type: object
+    UpdateCustomerParams:
+      description: |
+        Update Customer Params
+
+        Parameters for updating a customer
+      properties:
+        email:
+          description: The email address of the customer
+          type: string
+      required:
+      - email
+      title: UpdateCustomerParams
+      type: object
+    UpdateDisabledStatusRequest:
+      description: Request to update the disabled status of a verified crypto address
+      properties:
+        customer_id:
+          description: The customer ID
+          format: uuid
+          type: string
+        disabled:
+          description: Whether to disable the address
+          type: boolean
+      required:
+      - customer_id
+      - disabled
+      title: UpdateDisabledStatusRequest
+      type: object
+    UpdateWebhookRequest:
+      description: |
+        Update Webhook Request
+
+        Request to update an existing webhook
+      properties:
+        enabled:
+          description: Optional enabled status
+          type: boolean
+        label:
+          description: Optional new label for the webhook
+          type: string
+        topics:
+          description: Optional new topics for the webhook
+          items:
+            $ref: '#/components/schemas/WebhookEventType'
+          type: array
+      title: UpdateWebhookRequest
+      type: object
+    VariableFee:
+      description: |
+        Variable Fee
+
+        A Variable Fee associated with a Partner based on a variable fee schedule
+      properties:
+        volume_tiers:
+          description: The variable fees
+          items:
+            $ref: '#/components/schemas/TieredFee'
+          type: array
+      required:
+      - volume_tiers
+      title: VariableFee
+      type: object
+    VerifiedAddressResponse:
+      description: |
+        Verified Address Response
+
+        Response containing verified address details
+      properties:
+        address_type:
+          $ref: '#/components/schemas/AddressType'
+        blockchain:
+          $ref: '#/components/schemas/Blockchain'
+        created_at:
+          description: When the address was verified
+          format: date-time
+          type: string
+        disabled:
+          description: Whether the address is disabled
+          type: boolean
+        first_name:
+          description: The first name (for hosted wallets of individuals)
+          type: string
+        id:
+          description: The ID of the verified address
+          format: uuid
+          type: string
+        last_name:
+          description: The last name (for hosted wallets of individuals)
+          type: string
+        legal_name:
+          description: The legal name (for hosted wallets of legal entities)
+          type: string
+        proof_message:
+          description: The proof message
+          type: string
+        proof_signature:
+          description: The proof signature
+          type: string
+        travel_address:
+          description: The travel rule address (for hosted wallets)
+          type: string
+        wallet_address:
+          description: The wallet address
+          type: string
+      required:
+      - id
+      - created_at
+      - wallet_address
+      - address_type
+      - blockchain
+      - disabled
+      title: VerifiedAddressResponse
+      type: object
+    Webhook:
+      description: |
+        Webhook
+
+        Response containing webhook details
+      properties:
+        created_at:
+          description: When the webhook was created
+          format: date-time
+          type: string
+        enabled:
+          description: Whether the webhook is enabled
+          type: boolean
+        id:
+          description: The ID of the webhook
+          format: uuid
+          type: string
+        label:
+          description: A descriptive label for the webhook
+          type: string
+        last_failure:
+          description: The last time the webhook was executed with an error
+          format: date-time
+          type: string
+        last_failure_reason:
+          description: The reason for the last failure
+          type: string
+        partner_id:
+          description: The partner ID that owns this webhook
+          format: uuid
+          type: string
+        topics:
+          description: The topics this webhook subscribes to
+          items:
+            $ref: '#/components/schemas/WebhookEventType'
+          type: array
+        updated_at:
+          description: When the webhook was last updated
+          format: date-time
+          type: string
+      required:
+      - id
+      - label
+      - partner_id
+      - topics
+      - created_at
+      - updated_at
+      - enabled
+      title: Webhook
+      type: object
+    WebhookAutorampStatusMessage:
+      description: |
+        Webhook Autoramp Status Message
+
+        Contains details about an autoramp status change
+      properties:
+        id:
+          description: Unique identifier for the autoramp
+          format: uuid
+          type: string
+        status:
+          $ref: '#/components/schemas/AutorampStatus'
+      required:
+      - id
+      - status
+      title: WebhookAutorampStatusMessage
+      type: object
+    WebhookContainer:
+      description: |
+        Webhook Container
+
+        Top-level container for webhook notifications
+      properties:
+        data:
+          $ref: '#/components/schemas/WebhookNotification'
+        timestamp:
+          description: ISO timestamp when the notification was sent
+          type: string
+        type:
+          description: The type of notification
+          type: string
+      required:
+      - type
+      - timestamp
+      - data
+      title: WebhookContainer
+      type: object
+    WebhookCustomerStatusMessage:
+      description: |
+        Webhook Customer Status Message
+
+        Contains details about a customer status change
+      properties:
+        id:
+          description: Unique identifier for the customer
+          format: uuid
+          type: string
+        status:
+          $ref: '#/components/schemas/CustomerStatus'
+      required:
+      - id
+      - status
+      title: WebhookCustomerStatusMessage
+      type: object
+    WebhookEventKind:
+      description: |
+        Webhook Event Kind
+
+        Types of events that can be included in webhook notifications
+      enum:
+      - Transaction
+      - NewBankAccount
+      - NewAutoramp
+      - DepositAddressCreated
+      - CustomerCreated
+      type: string
+    WebhookEventMessage:
+      description: |
+        Webhook Event Message
+
+        Contains details about a general event notification
+      properties:
+        id:
+          description: Unique identifier for the event
+          format: uuid
+          type: string
+        kind:
+          $ref: '#/components/schemas/WebhookEventKind'
+      required:
+      - id
+      - kind
+      title: WebhookEventMessage
+      type: object
+    WebhookEventType:
+      description: |
+        Webhook Event Types
+
+        Represents the different types of webhook events that can be sent
+      enum:
+      - Transaction
+      - NewBankAccount
+      - NewAutoramp
+      - DepositAddressCreated
+      - RegisterFiatAddressStatus
+      - RegisterAutorampStatus
+      - TransactionStatus
+      - CustomerCreated
+      - CustomerStatus
+      - IdentificationStatus
+      - Ping
+      type: string
+    WebhookFiatAddressStatusMessage:
+      description: |
+        Webhook Fiat Address Status Message
+
+        Contains details about a fiat address status change
+      properties:
+        id:
+          description: Unique identifier for the fiat address
+          format: uuid
+          type: string
+        status:
+          $ref: '#/components/schemas/FiatAddressStatus'
+      required:
+      - id
+      - status
+      title: WebhookFiatAddressStatusMessage
+      type: object
+    WebhookIdentificationStatusMessage:
+      description: |
+        Webhook Identification Status Message
+
+        Contains details about an identification status change
+      properties:
+        id:
+          description: Unique identifier for the identification
+          format: uuid
+          type: string
+        status:
+          $ref: '#/components/schemas/IdentificationStatus'
+      required:
+      - id
+      - status
+      title: WebhookIdentificationStatusMessage
+      type: object
+    WebhookMessage:
+      anyOf:
+      - $ref: '#/components/schemas/WebhookEventMessage'
+      - $ref: '#/components/schemas/WebhookFiatAddressStatusMessage'
+      - $ref: '#/components/schemas/WebhookAutorampStatusMessage'
+      - $ref: '#/components/schemas/WebhookTransactionStatusMessage'
+      - $ref: '#/components/schemas/WebhookCustomerStatusMessage'
+      - $ref: '#/components/schemas/WebhookIdentificationStatusMessage'
+      - $ref: '#/components/schemas/WebhookPingMessage'
+      description: |
+        Webhook Message
+
+        Union type representing different kinds of webhook messages
+      type: object
+    WebhookNotification:
+      description: |
+        Webhook Notification
+
+        Notification sent to a webhook subscriber containing event details
+      properties:
+        customer_id:
+          description: The ID of the customer associated with this notification
+          format: uuid
+          type: string
+        message:
+          $ref: '#/components/schemas/WebhookMessage'
+      required:
+      - customer_id
+      - message
+      title: WebhookNotification
+      type: object
+    WebhookPingMessage:
+      description: |
+        Webhook Ping Message
+
+        A test message sent to verify webhook functionality
+      properties:
+        id:
+          description: Unique identifier for the ping message
+          format: uuid
+          type: string
+      required:
+      - id
+      title: WebhookPingMessage
+      type: object
+    WebhookTransactionStatusMessage:
+      description: |
+        Webhook Transaction Status Message
+
+        Contains details about a transaction status change
+      properties:
+        id:
+          description: Unique identifier for the transaction
+          format: uuid
+          type: string
+        status:
+          $ref: '#/components/schemas/AutorampTransactionState'
+      required:
+      - id
+      - status
+      title: WebhookTransactionStatusMessage
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      description: ApiKey authorization
+      in: header
+      name: X-API-Key
+      type: apiKey
+info:
+  description: The Stablecoin Payment Network
+  title: Iron API - Production
+  version: 1.0-5543
+openapi: 3.0.0
+paths:
+  /addresses/crypto/hosted:
+    post:
+      description: |
+        Register a hosted wallet address with its travel rule details
+        This is the address that belongs to a wallet another CASP hosts for the customer. To exchange travel rule data with the other CASP, the hosted wallet address needs to be registered here along with the travel rule address.
+      operationId: registerHostedWallet
+      parameters:
+      - deprecated: false
+        description: a UUID ensuring an address is only registered once
+        explode: true
+        in: header
+        name: IDEMPOTENCY-KEY
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the wallet address will be registered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/RegisterHostedWalletRequest'
+        description: The hosted wallet registration request
+        required: true
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/VerifiedAddressResponse'
+          description: Registration successful
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad request (e.g. invalid data)
+        '401':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Unauthorized (e.g. customer does not belong to partner)
+        '500':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Failed to register the address
+      security:
+      - ApiKeyAuth: []
+      summary: Register a hosted wallet address
+      tags:
+      - Addresses
+  /addresses/crypto/selfhosted:
+    post:
+      description: |
+        Submit a proof of address ownership. **The message must be in the format**:
+
+        > I am verifying ownership of the wallet address [Wallet Address] as customer [CustomerId] for UAB Iron Network. This message was signed on [DD/MM/YYYY] to confirm my control over this wallet.
+
+        The signature must be generated using the private key of the wallet address and is just the standard string format of standard ethereum / solana signatures:
+        ## Example message
+        ```ignore
+        I am verifying ownership of the wallet address GEhVdAGrGFvbAyj9ieZQt43mRAZZu4hRQ5MaKGgvpJMq as customer 7feaf33d-8551-4144-bfcb-01c86bcff857 for UAB Iron Network. This message was signed on 20/01/2024 to confirm my control over this wallet.
+        ```
+        ## Example signature
+        solana signature: 3Z3TWYMhq9vrA6K9ajQMQmVi1aXTmyASGLEvMpzNdS3BdWhNKeQGHtvF6cFNzR96tsnPPocJPjxfVsjtay9iWgTG
+        evm signature: 0x1234567890abcdef1234567890abcdef12345678900xa5f1751b75a28c12694f02590d29b8cdd68b4f5c783273a75823fc6cfeaa702f1a65fa7c1838ae799fe755c92443cb51631d000922329cdd2ce799eee75f42531babcdef1234567890abcdef
+      operationId: registerSelfHostedWalletAddress
+      parameters:
+      - deprecated: false
+        description: a UUID ensuring a signature is only processed once
+        explode: true
+        in: header
+        name: IDEMPOTENCY-KEY
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the wallet address will be registered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/RegisterSelfHostedWalletRequest'
+        description: The self-hosted wallet registration request
+        required: true
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/SelfHostedWalletResponse'
+          description: POST Self-Hosted Wallet Succeeded
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: POST Self-Hosted Wallet Failed (Bad Request)
+        '401':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: POST Self-Hosted Wallet Failed (Unauthorized)
+        '500':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: POST Self-Hosted Wallet Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Register a self-hosted wallet address
+      tags:
+      - Addresses
+  /addresses/crypto/{customer_id}:
+    get:
+      description: |+
+        Get all wallet addresses a customer has registered, either as hosted or self-hosted wallets
+
+      operationId: getWalletAddresses
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the wallet addresses will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the ID of the customer
+        explode: true
+        in: path
+        name: customer_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      - deprecated: false
+        description: Filter for which type of addresses to return
+        explode: false
+        in: query
+        name: filter
+        required: true
+        schema:
+          $ref: '#/components/schemas/AddressFilter'
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                items:
+                  $ref: '#/components/schemas/VerifiedAddressResponse'
+                type: array
+          description: GET Wallets Succeeded
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: GET Wallets Failed (Bad Request)
+        '401':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: GET Wallets Failed (Unauthorized)
+        '500':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: GET Wallets Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get all wallet addresses
+      tags:
+      - Addresses
+  /addresses/crypto/{id}/disabled:
+    put:
+      description: |
+        Enable or disable a verified crypto address. Disabled addresses cannot be used for transactions.
+        Only addresses belonging to the customer of the authenticated partner can be modified.
+      operationId: updateDisabledStatus
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the wallet address will be updated for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: The ID of the verified crypto address
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/UpdateDisabledStatusRequest'
+        description: The request to update the disabled status
+        required: true
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/VerifiedAddressResponse'
+          description: PUT Disabled Status Succeeded
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: PUT Disabled Status Failed (Bad Request)
+        '401':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: PUT Disabled Status Failed (Unauthorized)
+        '404':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: PUT Disabled Status Failed (Not Found)
+        '500':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: PUT Disabled Status Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Update the disabled status of a verified crypto address
+      tags:
+      - Addresses
+  /addresses/fiat:
+    get:
+      description: |
+        Get all fiat addresses with a specific status for the current partner
+      operationId: getFiatAddressesByStatus
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the fiat addresses will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: The Status to filter by. If not provided, defaults to `AuthorizationRequired`
+        explode: false
+        in: query
+        name: status
+        required: false
+        schema:
+          $ref: '#/components/schemas/FiatAddressStatus'
+      - deprecated: false
+        description: 'Paging: the cursor field from previous page'
+        explode: false
+        in: query
+        name: cursor
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the requested page size (max 100)'
+        explode: false
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 10
+          format: uint32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_FiatAddress'
+          description: GET Addresses Succeeded
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: GET Addresses Failed (Bad Request)
+        '401':
+          description: GET Addresses Failed (Unauthorized)
+        '404':
+          description: GET Addresses Failed (Not Found)
+        '500':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: GET Addresses Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get all fiat addresses with status
+      tags:
+      - Addresses
+    post:
+      description: |-
+        Register a bank account address for a customer.
+
+        **Adding a bank account requires authorization by the customer. The customer will recieve 2FA to authorize adding it.**
+      operationId: registerFiatAddress
+      parameters:
+      - deprecated: false
+        description: a UUID ensuring an address is only registered once
+        explode: true
+        in: header
+        name: IDEMPOTENCY-KEY
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the fiat address will be registered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/RegisterFiatAddressRequest'
+        description: The fiat address registration request
+        required: true
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/FiatAddress'
+          description: Registration successful
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad request (e.g. invalid data)
+        '401':
+          description: Unauthorized (e.g. customer does not belong to partner)
+        '404':
+          description: Not Found
+        '500':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Failed to register the address
+      security:
+      - ApiKeyAuth: []
+      summary: Register a fiat bank account for a customer.
+      tags:
+      - Addresses
+  /addresses/fiat/{customer_id}:
+    get:
+      description: |-
+        Get all fiat addresses registered for a customer
+
+        Bank account structure can vary per country. Therefore, the `bank_account_identifier` is always the identifier
+        that matches how a user would identify it. For SEPA it would be the IBAN.
+
+        You can search by providing a `search_term` parameter. This will search the following fields:
+
+        - `bank_account_identifier`
+        - `label`
+        - `bank_name`
+      operationId: getFiatAddresses
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the fiat addresses will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the ID of the customer
+        explode: true
+        in: path
+        name: customer_id
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: 'Paging: the cursor field from previous page'
+        explode: false
+        in: query
+        name: cursor
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the requested page size (max 100)'
+        explode: false
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 10
+          format: uint32
+          type: integer
+      - deprecated: false
+        description: A search term to filter the addresses
+        explode: false
+        in: query
+        name: search_term
+        required: false
+        schema:
+          default: null
+          maxLength: 256
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_FiatAddress'
+          description: GET Addresses Succeeded
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: GET Addresses Failed (Bad Request)
+        '401':
+          description: GET Addresses Failed (Unauthorized)
+        '404':
+          description: GET Addresses Failed (Not Found)
+        '500':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: GET Addresses Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get all fiat addresses / bank accounts
+      tags:
+      - Addresses
+  /addresses/fiat/{id}/retry-auth:
+    post:
+      description: |
+        Retry the authentication process on a failed fiat address
+
+        NOTE: This endpoint is not yet implemented
+      operationId: retryFiatAddressAuth
+      parameters:
+      - deprecated: false
+        description: the ID of the fiat address
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        '201':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/AuthenticationCode'
+          description: Create autoramp successful
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Retry Authentication
+      tags:
+      - Addresses
+  /authentication-codes/entity/{id}:
+    get:
+      description: |
+        Get the pending authentication code for an entity by ID
+        e.g. ID of Autoramp or FiatAddress (entity in AuhorizationRequired state)
+        if no pending code is found, retry flow will have to be triggered
+      operationId: getPendingAuthenticationCode
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the authentication code will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: The ID of the entity to get the pending authentication code for
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/AuthenticationCode'
+          description: GET Authentication Code Succeeded
+        '401':
+          description: GET Authentication Code Failed (Unauthorized)
+        '404':
+          description: GET Authentication Code Failed (Not Found)
+        '500':
+          description: GET Authentication Code Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get the pending authentication code for an entity
+      tags:
+      - Customer
+  /authentication-codes/{id}:
+    put:
+      description: |
+        Submit the code for a given authentication
+      operationId: submitAuthenticationCode
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the authentication code will be submitted under scope of the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: The ID of the authentication code to submit
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/SubmitAuthenticationCodeParams'
+        description: The authentication code to submit
+        required: true
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/AuthenticationCode'
+          description: PUT Authentication Code Succeeded
+        '401':
+          description: PUT Authentication Code Failed (Unauthorized)
+        '404':
+          description: PUT Authentication Code Failed (Not Found)
+        '500':
+          description: PUT Authentication Code Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Submit an authentication code
+      tags:
+      - Customer
+  /autoramp-transactions:
+    get:
+      description: |-
+        Returns a list of transactions, optionally filtered by autoramp ID or customer ID
+
+        An optional `search_term` parameter can be provided that will search the following fields:
+
+        - Bank Account Name
+        - Bank Account Provider Name
+        - Wallet Address
+      operationId: getAutorampTransactions
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the autoramps will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: Optional autoramp ID
+        explode: false
+        in: query
+        name: autoramp_id
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: Optional customer ID
+        explode: false
+        in: query
+        name: customer_id
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the cursor field from previous page'
+        explode: false
+        in: query
+        name: cursor
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the requested page size (max 100)'
+        explode: false
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 10
+          format: uint32
+          type: integer
+      - deprecated: false
+        description: A search term to filter the transactions
+        explode: false
+        in: query
+        name: search_term
+        required: false
+        schema:
+          default: null
+          maxLength: 256
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_AutorampTransaction'
+          description: Autoramp Transaction List
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: List autoramp transactions
+      tags:
+      - Autoramp
+  /autoramp-transactions/ids:
+    get:
+      description: |-
+        Return a subset of transactions by ID.
+        This can be used to query multiple transactions for updated states without having to go through all transactions.
+
+        You have to provide at least one transaction ID
+
+        Returns at most 100 transactions
+      operationId: getAutorampTransactionsByIds
+      parameters:
+      - deprecated: false
+        description: Ids of the transactions to get
+        explode: false
+        in: query
+        name: ids
+        required: true
+        schema:
+          items:
+            format: uuid
+            type: string
+          type: array
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_AutorampTransaction'
+          description: Autoramp Transaction List
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Get autoramp transactions by transaction IDs
+      tags:
+      - Autoramp
+  /autoramps:
+    get:
+      description: |-
+        Returns a paginated list of autoramps for all customers
+
+        If customer ID is provided, returns all autoramps for the specified customer
+
+        If status is provided, returns all autoramps with the specified status
+      operationId: getAutoramps
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the autoramps will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: The optional Customer ID to filter autoramps by. If not provided, returns autoramps for all customers
+        explode: false
+        in: query
+        name: customer_id
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: The status of the autoramps to get. If not provided, returns all autoramps
+        explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          $ref: '#/components/schemas/AutorampStatus'
+      - deprecated: false
+        description: 'Paging: the cursor field from previous page'
+        explode: false
+        in: query
+        name: cursor
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the requested page size (max 100)'
+        explode: false
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 10
+          format: uint32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_Autoramp'
+          description: Get autoramps successful
+        '204':
+          description: Ramp cancelled
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: List Autoramps for a Customer
+      tags:
+      - Autoramp
+    post:
+      description: |-
+        Creates a new autoramp, with a specified recipient account, source and destination currency
+
+        **Adding an autoramp requires authorization by the customer. The customer will recieve 2FA to authorize adding it.**
+      operationId: createAutoramp
+      parameters:
+      - deprecated: false
+        description: a UUID ensuring an Autoramp operation is only processed once
+        explode: true
+        in: header
+        name: IDEMPOTENCY-KEY
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the autoramp will be created for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/CreateAutoramp'
+        description: The request parameters for creating an autoramp
+        required: true
+      responses:
+        '201':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Autoramp'
+          description: Create autoramp successful
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '422':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Unprocessable Content
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new Autoramp
+      tags:
+      - Autoramp
+  /autoramps/check-limit:
+    get:
+      description: Checks if a customer has reached their limit for creating new autoramps based on the deposit account type and whether it's a third-party ramp.
+      operationId: checkAutorampLimit
+      parameters:
+      - deprecated: false
+        description: The customer ID
+        explode: false
+        in: query
+        name: customer_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      - deprecated: false
+        description: The type of deposit account intended (e.g., Iban, Wallet)
+        explode: false
+        in: query
+        name: deposit_account_type
+        required: true
+        schema:
+          $ref: '#/components/schemas/DepositAccountType'
+      - deprecated: false
+        description: Whether the intended autoramp is for a third party
+        explode: false
+        in: query
+        name: is_third_party
+        required: true
+        schema:
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/ApiCanCreateAutorampResponse'
+          description: Check successful
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Check if a customer can create more autoramps
+      tags:
+      - Autoramp
+  /autoramps/payments/open-banking/{payment_id}:
+    get:
+      description: |
+        Get the autoramp open banking payment for a given autoramp
+      operationId: getAutorampOpenBankingPayment
+      parameters:
+      - deprecated: false
+        description: The payment ID
+        explode: false
+        in: path
+        name: payment_id
+        required: true
+        schema:
+          type: string
+      responses:
+        '201':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/ApiAutorampOpenBankingPayment'
+          description: Create autoramp successful
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Get the autoramp open banking payment for existing payment
+      tags:
+      - Autoramp
+  /autoramps/quote:
+    get:
+      description: Get a quote for an autoramp with fixed conversion rate, exact amount out or amount in
+      operationId: getAutorampQuote
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the autoramps will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: |-
+          The parameters for the quote
+          The customer id
+        explode: false
+        in: query
+        name: customer_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      - deprecated: false
+        description: The source currency code
+        explode: false
+        in: query
+        name: source_currency_code
+        required: true
+        schema:
+          maxLength: 32
+          type: string
+      - deprecated: false
+        description: The source currency chain
+        explode: true
+        in: query
+        name: source_currency_chain
+        required: false
+        schema:
+          $ref: '#/components/schemas/Blockchain'
+      - deprecated: false
+        description: The destination currency code
+        explode: false
+        in: query
+        name: destination_currency_code
+        required: true
+        schema:
+          maxLength: 32
+          type: string
+      - deprecated: false
+        description: The destination currency chain
+        explode: true
+        in: query
+        name: destination_currency_chain
+        required: false
+        schema:
+          $ref: '#/components/schemas/Blockchain'
+      - deprecated: false
+        description: The recipient account, either a fiat iban or a crypto wallet address
+        explode: false
+        in: query
+        name: recipient_account
+        required: true
+        schema:
+          maxLength: 256
+          type: string
+      - deprecated: false
+        description: The source amount
+        explode: false
+        in: query
+        name: amount_in
+        required: false
+        schema:
+          default: null
+          format: decimal
+          type: string
+      - deprecated: false
+        description: The destination amount
+        explode: false
+        in: query
+        name: amount_out
+        required: false
+        schema:
+          default: null
+          format: decimal
+          type: string
+      - deprecated: false
+        description: The rate lock duration in minutes
+        explode: false
+        in: query
+        name: rate_lock_duration_minutes
+        required: false
+        schema:
+          default: null
+          format: int64
+          type: integer
+      - deprecated: false
+        description: The rate expiry policy
+        explode: false
+        in: query
+        name: rate_expiry_policy
+        required: true
+        schema:
+          $ref: '#/components/schemas/RateExpiryPolicy'
+      - deprecated: false
+        description: The slippage tolerance in bips
+        explode: false
+        in: query
+        name: slippage_tolerance_in_bips
+        required: false
+        schema:
+          default: null
+          format: decimal
+          type: string
+      - deprecated: false
+        description: The autoramp expiry time in hours. Maximum is 24 hours. It is limited to rate lock duration if rate expiry policy is Return
+        explode: false
+        in: query
+        name: expiry_in_hours
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - deprecated: false
+        description: Is this a third party autoramp
+        explode: false
+        in: query
+        name: is_third_party
+        required: true
+        schema:
+          type: boolean
+      - deprecated: false
+        description: Sender Account Number is required when the source currency is African & payment type is Bank transfer
+        explode: false
+        in: query
+        name: sender_account_number
+        required: false
+        schema:
+          default: null
+          maxLength: 256
+          type: string
+      - deprecated: false
+        description: Sender Mobile Number is required when the source currency is African & payment type is Mobile Money
+        explode: false
+        in: query
+        name: sender_mobile_number
+        required: false
+        schema:
+          default: null
+          maxLength: 256
+          type: string
+      - deprecated: false
+        description: Sender Account Financial Institution/Bank is required when the source currency is African
+        explode: true
+        in: query
+        name: sender_bank
+        required: false
+        schema:
+          $ref: '#/components/schemas/Bank'
+      - deprecated: false
+        description: The external id
+        explode: false
+        in: query
+        name: external_id
+        required: false
+        schema:
+          default: null
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/SignedAutorampQuote'
+          description: Get Quote successful
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Get a quote for an autoramp
+      tags:
+      - Autoramp
+  /autoramps/{autoramp_id}:
+    delete:
+      description: Cancel the execution of an autoramp. After this, the given autoramp will not perform any transactions anymore.
+      operationId: cancelAutoramp
+      parameters:
+      - deprecated: false
+        description: The autoramp ID
+        explode: false
+        in: path
+        name: autoramp_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        '204':
+          description: Autoramp cancelled successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Cancel an Autoramp
+      tags:
+      - Autoramp
+    get:
+      description: Get a single autoramp by ID
+      operationId: getAutorampById
+      parameters:
+      - deprecated: false
+        description: The autoramp ID
+        explode: false
+        in: path
+        name: autoramp_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Autoramp'
+          description: Get autoramp successful
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Get an Autoramp by ID
+      tags:
+      - Autoramp
+    patch:
+      description: |
+        Patch the autoramp market by ID
+      operationId: patchAutorampMarketById
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the autoramps will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: The autoramp ID
+        explode: false
+        in: path
+        name: autoramp_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/PatchAutorampMarketParameters'
+        description: Parameters for updating the autoramp market
+        required: true
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Autoramp'
+          description: Update autoramp successful
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Patch an autoramp market
+      tags:
+      - Autoramp
+  /autoramps/{autoramp_id}/payments/open-banking:
+    post:
+      description: |
+        Create an open banking payment link for a given autoramp
+      operationId: createAutorampOpenBankingPayment
+      parameters:
+      - deprecated: false
+        description: a UUID ensuring an Autoramp operation is only processed once
+        explode: true
+        in: header
+        name: IDEMPOTENCY-KEY
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: The autoramp ID
+        explode: false
+        in: path
+        name: autoramp_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/CreateAutorampOpenBankingPayment'
+        description: Open banking payment parameters
+        required: true
+      responses:
+        '201':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/ApiAutorampOpenBankingPayment'
+          description: Create autoramp successful
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Create an open banking payment link
+      tags:
+      - Autoramp
+  /autoramps/{autoramp_id}/retry-auth:
+    post:
+      description: |
+        Retry the authentication process on a failed autoramp
+      operationId: retryAutorampAuth
+      parameters:
+      - deprecated: false
+        description: a UUID ensuring an Autoramp operation is only processed once
+        explode: true
+        in: header
+        name: IDEMPOTENCY-KEY
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the autoramp ID
+        explode: false
+        in: path
+        name: autoramp_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        '201':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/AuthenticationCode'
+          description: Authorization of autoramp succeeded
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Retry authentication
+      tags:
+      - Autoramp
+  /autoramps/{external_id}/external:
+    get:
+      description: Get a single autoramp by external ID
+      operationId: getAutorampByExternalId
+      parameters:
+      - deprecated: false
+        description: The autoramp external ID
+        explode: false
+        in: path
+        name: external_id
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: The optional Customer ID to scope the search to
+        explode: false
+        in: query
+        name: customer_id
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Autoramp'
+          description: Get autoramp successful
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Error
+      security:
+      - ApiKeyAuth: []
+      summary: Get an Autoramp by external ID
+      tags:
+      - Autoramp
+  /cryptocurrencies:
+    get:
+      description: |
+        A list of all crypto currencies which are currently supported by Iron
+      operationId: listCryptoCurrencies
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CryptoCurrency'
+                type: array
+          description: GET crypto currencies succeeded
+        '401':
+          description: GET crypto currencies failed (Unauthorized)
+      security:
+      - ApiKeyAuth: []
+      summary: List all available crypto currencies
+      tags:
+      - Currencies
+  /customers:
+    get:
+      description: |
+        Get all customers for a particular partner. The partner ID does not need to be provided as it
+        is provided by the API Key.
+
+        An optional `search_term` can be provided which will filter by matches in the `name` field of the customers.
+      operationId: getAllCustomers
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the customers will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: 'Paging: the cursor field from previous page'
+        explode: false
+        in: query
+        name: cursor
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the requested page size (max 100)'
+        explode: false
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 10
+          format: uint32
+          type: integer
+      - deprecated: false
+        description: A search term to filter the customers
+        explode: false
+        in: query
+        name: search_term
+        required: false
+        schema:
+          default: null
+          maxLength: 256
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_Customer'
+          description: GET ALL Customer Succeeded
+        '401':
+          description: GET ALL Customer Failed (Unauthorized)
+        '404':
+          description: GET ALL Customer Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get all Customers
+      tags:
+      - Customer
+    post:
+      description: |
+        Create a new **business** or **legal person** customer.
+      operationId: createCustomer
+      parameters:
+      - deprecated: false
+        description: a UUID ensuring an Customer operation is only processed once
+        explode: true
+        in: header
+        name: IDEMPOTENCY-KEY
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the customer will be created for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerParams'
+        description: Parameters required to create a new Customer
+        required: true
+      responses:
+        '201':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: POST Customer Succeeded
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: POST Customer Failed (Bad Request)
+        '401':
+          description: POST Customer Failed (Unauthorized)
+        '500':
+          description: POST Customer Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new customer
+      tags:
+      - Customer
+  /customers/{external_id}/external:
+    get:
+      description: |
+        Retrieve a specific customer by external ID
+      operationId: getCustomerByExternalId
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the customer will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the external ID of the Customer to GET
+        explode: true
+        in: path
+        name: external_id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: GET Customer Succeeded
+        '401':
+          description: GET Customer Failed (Unauthorized)
+        '404':
+          description: GET Customer Failed (Resource Not Found)
+        '500':
+          description: GET Customer Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get a customer by external ID
+      tags:
+      - Customer
+  /customers/{id}:
+    get:
+      description: |
+        Retrieve a specific customer by ID
+      operationId: getCustomerById
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the customer will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the ID of the Customer to GET
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: GET Customer Succeeded
+        '401':
+          description: GET Customer Failed (Unauthorized)
+        '404':
+          description: GET Customer Failed (Resource Not Found)
+        '500':
+          description: GET Customer Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get a customer by ID
+      tags:
+      - Customer
+    put:
+      description: |
+        Update a customer by ID
+      operationId: updateCustomer
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the wallet address will be registered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the ID of the Customer to update
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerParams'
+        description: The customer data to be used for the update
+        required: true
+      responses:
+        '204':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: PUT Customer Succeeded
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: PUT Customer Failed (Bad Request)
+        '401':
+          description: PUT Customer Failed (Unauthorized)
+        '500':
+          description: PUT Customer Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Update a customer
+      tags:
+      - Customer
+  /customers/{id}/identifications:
+    get:
+      description: |
+        Retrieve all identifications for this customer
+      operationId: getAllCustomerIdentifications
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the identifications will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the ID of the Customer to get Identifications for
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the cursor field from previous page'
+        explode: false
+        in: query
+        name: cursor
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the requested page size (max 100)'
+        explode: false
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 10
+          format: uint32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_Identification'
+          description: GET ALL Identification Succeeded
+        '401':
+          description: GET ALL Identification Failed (Unauthorized)
+        '403':
+          description: GET ALL Identification Failed (Forbidden)
+        '404':
+          description: GET ALL Identification Failed (Resource Not Found)
+        '500':
+          description: GET ALL Identification Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get all customer Identifications
+      tags:
+      - Customer
+    post:
+      description: |
+        This will create a new identification for the customer, dependent on the customer type a KYC or KYB will be created for the customer to complete.
+        we support two types of identification:
+        - Outsourced: where data is provided in the request
+        - Direct: where we will trigger a verification using our providers built in flows for data collection
+        - Direct: To trigger direct, DO NOT POST A BODY, OR IF YOU MUST PASS BODY: NULL
+      operationId: createCustomerIdentification
+      parameters:
+      - deprecated: false
+        description: a UUID ensuring an Customer Identification operation is only processed once
+        explode: true
+        in: header
+        name: IDEMPOTENCY-KEY
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the identification will be created under scope of the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the ID of the Customer to create an Identification for
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/IdentificationCreateParams'
+        description: The Identification data to be used for the identification
+        required: false
+      responses:
+        '201':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Identification'
+          description: POST Customer Identification Succeeded
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: POST Customer Identification Failed (Invalid Request)
+        '401':
+          description: POST Customer Identification Failed (Unauthorized)
+        '403':
+          description: POST Customer Identification Failed (Forbidden)
+        '404':
+          description: POST Customer Identification Failed (Resource Not Found)
+        '409':
+          description: POST Customer Idenfication Failed (Has Pending Identification)
+        '500':
+          description: POST Customer Identification Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Create customer identification
+      tags:
+      - Customer
+  /customers/{id}/signings:
+    get:
+      description: |
+        Retrieve all signings for a customer, representing the various legal agreements and consents gathered from the customer.
+        See The KYC/Compliance section of our documentation for more info.
+      operationId: getSignings
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the signings will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the ID of the Customer to get Signings for
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the cursor field from previous page'
+        explode: false
+        in: query
+        name: cursor
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the requested page size (max 100)'
+        explode: false
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 10
+          format: uint32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_Signing'
+          description: GET Signings Succeeded
+        '401':
+          description: GET Signings Failed (Unauthorized)
+        '404':
+          description: GET Signings Resource Not found
+        '500':
+          description: GET Signings Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get all customer Signings
+      tags:
+      - Customer
+    post:
+      description: |+
+        This will create a signing for the customer, representing the legal consent to a specific Document.
+        See The KYC/Compliance section of our documentation for more info.
+
+      operationId: createCustomerSigning
+      parameters:
+      - deprecated: false
+        description: a UUID ensuring an Signing operation is only processed once
+        explode: true
+        in: header
+        name: IDEMPOTENCY-KEY
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the signing will be created under scope of the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the ID of the Customer to create a Signing for
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/SigningCreateParams'
+        description: Parameters required to create a new Signing
+        required: true
+      responses:
+        '201':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Signing'
+          description: POST Signing Succeeded
+        '401':
+          description: POST Signing Failed (Unauthorized)
+        '422':
+          description: POST Signing Failed (Validation Error)
+        '500':
+          description: POST Signing Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new Customer signing
+      tags:
+      - Customer
+  /customers/{id}/signup-token:
+    post:
+      description: |-
+        This will create a token that allows a customer to onboard through the Iron onboarding flow which takes care of KYB or KYC.
+        Once this token has been created, the URL from the response can be shared with the customer to onboard onto Iron.
+
+        > **NOTE:** Only use this endpoint if you'd like to onboard a customer using Iron's onboarding flow
+
+        If customer_app_access is set to true on the Partner, this will result in the customer being required to create a User account for access to the app section of Partner Area
+      operationId: createCustomerSignupToken
+      parameters:
+      - deprecated: false
+        description: a UUID ensuring an Customer Signup Token operation is only processed once
+        explode: true
+        in: header
+        name: IDEMPOTENCY-KEY
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the signup token will be created for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the ID of the Customer to create an token for
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        '201':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/SignupToken'
+          description: POST Customer Signup Token Succeeded
+        '401':
+          description: POST Customer Signup Token Failed (Unauthorized)
+        '403':
+          description: POST Customer Signup Token Failed (Forbidden)
+        '404':
+          description: POST Customer Signup Token Failed (Not Found)
+        '500':
+          description: POST Customer Signup Token Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Create customer signup token
+      tags:
+      - Customer
+  /customers/{id}/unsigned-documents:
+    get:
+      description: |
+        Get all unsigned documents for a customer, for which a signing is required
+      operationId: getCustomerUnsignedDocuments
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the unsigned documents will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the ID of the Customer to get unsigned documents for
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the cursor field from previous page'
+        explode: false
+        in: query
+        name: cursor
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the requested page size (max 100)'
+        explode: false
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 10
+          format: uint32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_Document'
+          description: GET Documents Succeeded
+        '401':
+          description: GET Documents Failed (Unauthorized)
+        '404':
+          description: GET Documents Resource Not found
+        '500':
+          description: GET Documents Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get customer unsigned documents
+      tags:
+      - Customer
+  /documents:
+    get:
+      description: |
+        Retrieve all documents customers are required to generate signings for before gaining API access.
+        See The KYC/Compliance section of our documentation for more info.
+      operationId: getAllDocuments
+      parameters:
+      - deprecated: false
+        description: 'Paging: the cursor field from previous page'
+        explode: false
+        in: query
+        name: cursor
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the requested page size (max 100)'
+        explode: false
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 10
+          format: uint32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_Document'
+          description: GET Documents Succeeded
+        '401':
+          description: GET Documents Failed (Unauthorized)
+        '404':
+          description: GET Documents Resource Not found
+        '500':
+          description: GET Documents Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get all documents
+      tags:
+      - Document
+  /documents/{id}:
+    get:
+      description: |
+        Retrieve the metadata associated with the document by ID
+        See The KYC/Compliance section of our documentation for more info.
+      operationId: getDocument
+      parameters:
+      - deprecated: false
+        description: The ID of the Document
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: GET Document Succeeded
+        '401':
+          description: GET Document Failed (Unauthorized)
+        '404':
+          description: GET Document Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get document By ID
+      tags:
+      - Document
+  /documents/{id}/file:
+    get:
+      description: |
+        Retrieve the file associated with the document ID
+        See The KYC/Compliance section of our documentation for more info.
+      operationId: getFile
+      parameters:
+      - deprecated: false
+        description: The ID of the Document for file retrieval
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        '200':
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+          description: GET File Succeeded
+        '401':
+          description: GET File Failed (Unauthorized)
+        '404':
+          description: GET File Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get file associated with document
+      tags:
+      - Document
+  /exchange-rate:
+    get:
+      description: |
+        Get the exchange rate from a source currency to a destination currency for a customer with effective rate and fees
+      operationId: getExchangeRate
+      parameters:
+      - deprecated: false
+        description: customer id
+        explode: true
+        in: query
+        name: customer_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      - deprecated: false
+        description: source currency code
+        explode: true
+        in: query
+        name: source_currency_code
+        required: true
+        schema:
+          maxLength: 32
+          type: string
+      - deprecated: false
+        description: source currency type
+        explode: true
+        in: query
+        name: source_currency_type
+        required: true
+        schema:
+          $ref: '#/components/schemas/CurrencyType'
+      - deprecated: false
+        description: source currency chain
+        explode: true
+        in: query
+        name: source_currency_chain
+        required: false
+        schema:
+          $ref: '#/components/schemas/Blockchain'
+      - deprecated: false
+        description: destination currency code
+        explode: true
+        in: query
+        name: destination_currency_code
+        required: true
+        schema:
+          maxLength: 32
+          type: string
+      - deprecated: false
+        description: destination currency type
+        explode: true
+        in: query
+        name: destination_currency_type
+        required: true
+        schema:
+          $ref: '#/components/schemas/CurrencyType'
+      - deprecated: false
+        description: destination currency chain
+        explode: true
+        in: query
+        name: destination_currency_chain
+        required: false
+        schema:
+          $ref: '#/components/schemas/Blockchain'
+      - deprecated: false
+        description: amount
+        explode: true
+        in: query
+        name: amount
+        required: true
+        schema:
+          format: decimal
+          type: string
+      - deprecated: true
+        description: partner fee in bips
+        explode: true
+        in: query
+        name: _partner_fee_in_bips
+        required: false
+        schema:
+          format: uint64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/ExchangeRate'
+          description: The exchange rate response
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: The bad request response
+        '401':
+          description: The unauthorized response
+        '500':
+          description: The internal server error response
+      security:
+      - ApiKeyAuth: []
+      summary: Get exchange rate
+      tags:
+      - ExchangeRate
+  /fee-profiles:
+    get:
+      description: Gets fee profile of partner
+      operationId: getFeeProfiles
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the fee profiles will be filtered for the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_FeeProfile'
+          description: GET ALL Fee Profiles Succeeded
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad Request
+        '401':
+          description: GET ALL Fee Profiles Failed (Unauthorized)
+        '404':
+          description: GET ALL Customer Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get Fee Profile of Partner
+      tags:
+      - FeeProfiles
+  /fiatcurrencies:
+    get:
+      description: |
+        A list of all fiat currencies which are currently supported by Iron
+      operationId: listFiatCurrencies
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                items:
+                  $ref: '#/components/schemas/FiatCurrency'
+                type: array
+          description: GET fiat currencies succeeded
+        '401':
+          description: GET fiat currencies failed (Unauthorized)
+      security:
+      - ApiKeyAuth: []
+      summary: List all available fiat currencies
+      tags:
+      - Currencies
+  /identifications/{id}:
+    get:
+      description: |
+        Retrieve a specific Identification by ID
+      operationId: getIdentificationById
+      parameters:
+      - deprecated: false
+        description: the ID of the Identification to GET
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Identification'
+          description: GET Identification Succeeded
+        '401':
+          description: GET Identification Failed (Unauthorized)
+        '403':
+          description: GET Identification Failed (Forbidden)
+        '404':
+          description: GET Identification Failed (ResourceNotFound)
+        '500':
+          description: GET Identification Failed (Internal Error)
+      security:
+      - ApiKeyAuth: []
+      summary: Get an Identification by ID
+      tags:
+      - Customer
+  /webhooks:
+    get:
+      description: |
+        Lists all webhooks for the currently authenticated partner
+      operationId: listWebhooks
+      parameters:
+      - deprecated: false
+        description: 'Paging: the cursor field from previous page'
+        explode: false
+        in: query
+        name: cursor
+        required: false
+        schema:
+          default: null
+          format: uuid
+          type: string
+      - deprecated: false
+        description: 'Paging: the requested page size (max 100)'
+        explode: false
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 10
+          format: uint32
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/PagedList_Webhook'
+          description: Listing successful
+        '401':
+          description: Unauthorized
+        '500':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Failed to list webhooks
+      security:
+      - ApiKeyAuth: []
+      summary: List all webhooks
+      tags:
+      - Webhooks
+  /webhooks/{id}:
+    patch:
+      description: |
+        Updates an existing webhook for the currently authenticated partner
+      operationId: updateWebhook
+      parameters:
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the webhook will be updated under scope of the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: The ID of the webhook to update
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/UpdateWebhookRequest'
+        description: The webhook update request
+        required: true
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Webhook'
+          description: Update successful
+        '400':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Bad request (e.g. invalid data)
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: string
+          description: Failed to update the webhook
+      security:
+      - ApiKeyAuth: []
+      summary: Update a webhook
+      tags:
+      - Webhooks
+  /webhooks/{id}/ping:
+    post:
+      description: Sends a test ping event to a webhook for testing purposes
+      operationId: pingWebhook
+      parameters:
+      - deprecated: false
+        description: a UUID ensuring the ping operation is only processed once
+        explode: true
+        in: header
+        name: IDEMPOTENCY-KEY
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: Optional sub-partner UUID, if provided, the webhook will be pinged under scope of the sub-partner
+        explode: true
+        in: header
+        name: X-SUB-PARTNER-ID
+        required: true
+        schema:
+          type: string
+      - deprecated: false
+        description: the ID of the webhook to ping
+        explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/PingWebhookParams'
+        description: Parameters required to ping a webhook
+        required: true
+      responses:
+        '200':
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: boolean
+          description: Successfully pinged webhook
+        '401':
+          description: Unauthorized
+        '404':
+          description: Webhook not found
+        '500':
+          description: Internal server error
+      security:
+      - ApiKeyAuth: []
+      summary: Ping webhook
+      tags:
+      - Webhooks
+servers:
+- url: https://api.iron.xyz/api
+tags:
+- description: Operations on Addresses
+  name: Addresses
+- description: Operations on Autoramp
+  name: Autoramp
+- description: Operations on Currencies
+  name: Currencies
+- description: Operations on Customers
+  name: Customer
+- description: Operations on Documents
+  name: Document
+- description: Operations on Exchange Rate
+  name: ExchangeRate
+- description: Operations on Fee Profiles
+  name: FeeProfiles
+- description: Operations for Sandbox Testing
+  name: Sandbox
+- description: Operations on SSE
+  name: Sse
+- description: Operations on Webhooks
+  name: Webhooks
+webhooks:
+  new_event:
+    post:
+      description: |-
+        This webhook is triggered when a significant event occurs within the system
+        that a partner might be interested in. The payload contains details about the
+        event type and the associated data.
+
+        ## Request
+
+        The webhook will be sent as an HTTP `POST` request to the URL configured
+        for the webhook. The body of the request will be a JSON payload
+        (`application/json`) containing an `ApiWebhookContainer`.
+
+        ## Headers
+
+        The following headers will be included in the request, adhering to [the
+        Standard Webhooks specification](https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md):
+
+        - `content-type: application/json`: Indicates the payload format.
+        - `webhook-id`: A unique UUID (version 4) identifying this specific
+        delivery attempt. This can be used for idempotency and logging.
+        - `webhook-timestamp`: A string representing the Unix timestamp (seconds since epoch)
+        of when the webhook notification was sent.
+        - `webhook-signature`: A signature to verify the authenticity and integrity
+        of the payload. The format is `v1=<signature>`, where `<signature>` is
+        an HMAC-SHA256 hash.
+
+        ## Signature Verification
+
+        To verify the signature:
+        1. Extract the `webhook-timestamp` from the header.
+        2. Extract the `webhook-signature` from the header and remove the `v1=` prefix.
+        3. Concatenate the `webhook-timestamp` string and the raw request body.
+        4. Calculate the HMAC-SHA256 hash of the concatenated string using your
+        webhook's secret key.
+        5. Compare the calculated hash (hex-encoded) with the signature extracted
+        from the header. They should match.
+
+        It is crucial to use a constant-time comparison function when comparing
+        signatures to prevent timing attacks.
+        (See the examples for more details)
+      operationId: newEvent
+      requestBody:
+        content:
+          application/json; charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/WebhookContainer'
+        required: true
+      responses:
+        '200':
+          description: ''
+      summary: Dispatches an event notification to a configured webhook endpoint.
+      tags:
+      - Webhooks

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "ironxyz": {
+      "command": "npx",
+      "args": ["-y", "@ironxyz/mcp-server"],
+      "env": {
+        "IRON_ENVIRONMENT": "production",
+        "IRON_API_KEY": "your-iron-api-key-here",
+        "IRON_READ_ONLY_MODE": "false"
+      }
+    }
+  }
+}

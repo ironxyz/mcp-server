@@ -1,0 +1,30 @@
+# Development files
+src/
+*.ts
+!*.d.ts
+tsconfig.json
+pnpm-lock.yaml
+node_modules/
+
+# Testing files  
+test-*.js
+*.test.js
+*.spec.js
+
+# Documentation drafts
+docs/
+*.md
+!README.md
+
+# Configuration files
+.env
+.env.*
+mcp-config.json
+
+# Build artifacts
+*.tsbuildinfo
+*.log
+
+# Version control
+.git/
+.gitignore 

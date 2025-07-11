@@ -1,0 +1,62 @@
+{
+  "name": "@ironxyz/mcp-server",
+  "version": "0.1.0",
+  "description": "Official MCP server for Iron.xyz API - provides easy access to Iron.xyz endpoints for Claude Desktop and Cursor IDE",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "watch": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "pnpm run build && pnpm run test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.7.0",
+    "axios": "^1.6.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "tsx": "^4.6.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "ironxyz-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "package.json"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "iron",
+    "ironxyz",
+    "api",
+    "claude",
+    "cursor",
+    "openapi",
+    "stablecoin"
+  ],
+  "author": "Iron.xyz",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ironxyz/mcp-server.git"
+  },
+  "homepage": "https://iron.xyz",
+  "bugs": {
+    "url": "https://github.com/ironxyz/mcp-server/issues"
+  }
+}
