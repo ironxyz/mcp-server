@@ -38,7 +38,9 @@ jobs:
           version: 9
       - name: Set version if specified
         if: ${{ github.event.inputs.version != '' }}
-        run: pnpm version ${{ github.event.inputs.version }} --no-git-tag-version
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: pnpm version "$INPUT_VERSION" --no-git-tag-version
       - run: pnpm install --frozen-lockfile
       - name: Publish release
         run: pnpm run release
