@@ -1,0 +1,4 @@
+{
+    "description" : "This is an automatically generated file, please do not edit! If you want to make any changes see: https://github.com/moonpay/ghsec",
+    "extends": ["github>moonpay/ghsec//config/shared/renovate/default"]
+}
