@@ -1,6 +1,6 @@
 {
   "name": "@ironxyz/mcp-server",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Official MCP server for Iron.xyz API - provides easy access to Iron.xyz endpoints for Claude Desktop and Cursor IDE",
   "type": "module",
   "main": "dist/index.js",
@@ -13,7 +13,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "release": "pnpm run build && pnpm publish --access public",
+    "release": "pnpm run build && pnpm publish --access public --no-git-checks",
     "prepublishOnly": "pnpm run build && pnpm run test"
   },
   "dependencies": {
