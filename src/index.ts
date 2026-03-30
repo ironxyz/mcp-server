@@ -5,16 +5,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import yaml from "js-yaml";
 import axios from "axios";
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ErrorCode,
-  ListToolsRequestSchema,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
-  McpError,
-} from "@modelcontextprotocol/sdk/types.js";
+import { McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
 import { createRequire } from "module";
 
 import { formatApiResponse, formatApiError } from "./formatters/apiResponse.js";
@@ -35,9 +29,6 @@ import {
   type ListAllEndpointsArgs,
   type GetApiSpecsArgs,
   type InvokeApiEndpointArgs,
-  type FindEndpointPromptArgs,
-  type TestEndpointPromptArgs,
-  type AnalyzeResponsePromptArgs,
   type HttpMethod,
   type JsonValue,
   isOpenAPIOperation,
@@ -52,89 +43,15 @@ const require = createRequire(import.meta.url);
 const packageJson = require("../package.json");
 const VERSION = packageJson.version;
 
-// Type guard functions for MCP arguments
-function isListAllEndpointsArgs(args: unknown): args is ListAllEndpointsArgs {
-  return typeof args === "object" && args !== null;
-}
-
-function isGetApiSpecsArgs(args: unknown): args is GetApiSpecsArgs {
-  return (
-    typeof args === "object" &&
-    args !== null &&
-    "path" in args &&
-    "method" in args &&
-    typeof (args as Record<string, unknown>).path === "string" &&
-    typeof (args as Record<string, unknown>).method === "string"
-  );
-}
-
-function isInvokeApiEndpointArgs(args: unknown): args is InvokeApiEndpointArgs {
-  return (
-    typeof args === "object" &&
-    args !== null &&
-    "path" in args &&
-    "method" in args &&
-    typeof (args as Record<string, unknown>).path === "string" &&
-    typeof (args as Record<string, unknown>).method === "string"
-  );
-}
-
-function isFindEndpointPromptArgs(
-  args: unknown
-): args is FindEndpointPromptArgs {
-  return (
-    typeof args === "object" &&
-    args !== null &&
-    "goal" in args &&
-    typeof (args as Record<string, unknown>).goal === "string"
-  );
-}
-
-function isTestEndpointPromptArgs(
-  args: unknown
-): args is TestEndpointPromptArgs {
-  return (
-    typeof args === "object" &&
-    args !== null &&
-    "path" in args &&
-    "method" in args &&
-    typeof (args as Record<string, unknown>).path === "string" &&
-    typeof (args as Record<string, unknown>).method === "string"
-  );
-}
-
-function isAnalyzeResponsePromptArgs(
-  args: unknown
-): args is AnalyzeResponsePromptArgs {
-  return (
-    typeof args === "object" &&
-    args !== null &&
-    "response_data" in args &&
-    "endpoint_path" in args &&
-    "endpoint_method" in args &&
-    typeof (args as Record<string, unknown>).response_data === "string" &&
-    typeof (args as Record<string, unknown>).endpoint_path === "string" &&
-    typeof (args as Record<string, unknown>).endpoint_method === "string"
-  );
-}
-
 class IronXyzMcpServer {
-  private server: Server;
+  private server: McpServer;
   private openApiSpec: OpenAPISpec | null = null;
   private config: ServerConfig;
 
   constructor() {
-    this.server = new Server(
-      {
-        name: "@ironxyz/mcp-server",
-        version: VERSION,
-      },
-      {
-        capabilities: {
-          tools: {},
-          prompts: {},
-        },
-      }
+    this.server = new McpServer(
+      { name: "@ironxyz/mcp-server", version: VERSION },
+      { instructions: "Always call get-api-specs before invoke-api-endpoint — you need the full endpoint schema to construct a correct request. Use list-all-endpoints to discover available endpoints first." },
     );
 
     this.config = this.loadConfig();
@@ -322,12 +239,38 @@ class IronXyzMcpServer {
     return resolved;
   }
 
+  /**
+   * Match a concrete path (e.g. "/identifications/abc123") against OpenAPI
+   * path templates (e.g. "/identifications/{id}"). Returns the matching
+   * template key or null.
+   */
+  private findMatchingPathTemplate(
+    spec: OpenAPISpec,
+    path: string
+  ): string | null {
+    // Exact match first
+    if (spec.paths[path]) return path;
+
+    // Try matching against templates
+    for (const template of Object.keys(spec.paths)) {
+      const regex = new RegExp(
+        "^" + template.replace(/\{[^}]+\}/g, "([^/]+)") + "$"
+      );
+      if (regex.test(path)) return template;
+    }
+
+    return null;
+  }
+
   private getEndpointDetails(
     spec: OpenAPISpec,
     path: string,
     method: string
   ): EndpointDetails | null {
-    const pathItem = spec.paths[path];
+    const template = this.findMatchingPathTemplate(spec, path);
+    if (!template) return null;
+
+    const pathItem = spec.paths[template];
     if (!pathItem) return null;
 
     const operation = pathItem[
@@ -347,260 +290,89 @@ class IronXyzMcpServer {
   }
 
   private setupToolHandlers() {
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [
-        {
-          name: "list-all-endpoints",
-          description:
-            "Get a comprehensive overview of all available API endpoints organized by category/tag. Use this to explore the API structure and find endpoints related to your goal.",
-          inputSchema: {
-            type: "object",
-            properties: {
-              filterByTag: {
-                type: "string",
-                description:
-                  "Filter endpoints by tag (e.g., 'Customer', 'Autoramp')",
-              },
-            },
-          },
-        },
-        {
-          name: "get-api-specs",
-          description:
-            "Get detailed specifications for a specific API endpoint including parameters, request/response schemas, and examples. Should be used to get a deeper understanding of an API endpoint you will use for code generation or for real API invoking. In case you intend to use the invoke-api-endpoint MCP tool, ALWAYS use this before, so you understand the full context of an API.",
-          inputSchema: {
-            type: "object",
-            properties: {
-              path: {
-                type: "string",
-                description: "The API endpoint path (e.g., '/customers')",
-              },
-              method: {
-                type: "string",
-                description: "HTTP method (GET, POST, PUT, DELETE)",
-              },
-            },
-            required: ["path", "method"],
-          },
-        },
-        {
-          name: "invoke-api-endpoint",
-          description:
-            "Make an actual API call to the Iron API. Use this ONLY after getting complete endpoint specifications with the get-api-specs MCP tool. This tool requires proper authentication and can be in read-only mode if configured.",
-          inputSchema: {
-            type: "object",
-            properties: {
-              path: {
-                type: "string",
-                description: "The API endpoint path (e.g., '/customers')",
-              },
-              method: {
-                type: "string",
-                description: "HTTP method (GET, POST, PUT, DELETE, PATCH)",
-              },
-              parameters: {
-                type: "object",
-                description: "Query parameters as key-value pairs",
-                additionalProperties: true,
-              },
-              body: {
-                type: "object",
-                description: "Request body for POST/PUT/PATCH requests",
-                additionalProperties: true,
-              },
-              headers: {
-                type: "object",
-                description: "Additional headers as key-value pairs",
-                additionalProperties: { type: "string" },
-              },
-            },
-            required: ["path", "method"],
-          },
-        },
-      ],
-    }));
+    this.server.registerTool("list-all-endpoints", {
+      description:
+        "Get a comprehensive overview of all available API endpoints organized by category/tag. Use this to explore the API structure and find endpoints related to your goal.",
+      inputSchema: {
+        filterByTag: z.string().optional().describe("Filter endpoints by tag (e.g., 'Customer', 'Autoramp')"),
+      },
+      annotations: { readOnlyHint: true },
+    }, async ({ filterByTag }) => {
+      return await this.handleListAllEndpoints({ filterByTag });
+    });
 
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      const { name, arguments: args } = request.params;
+    this.server.registerTool("get-api-specs", {
+      description:
+        "Get detailed specifications for a specific API endpoint including parameters, request/response schemas, and examples. Should be used to get a deeper understanding of an API endpoint you will use for code generation or for real API invoking. In case you intend to use the invoke-api-endpoint MCP tool, ALWAYS use this before, so you understand the full context of an API.",
+      inputSchema: {
+        path: z.string().describe("The API endpoint path — use the template form from list-all-endpoints (e.g., '/customers', '/identifications/{id}') or a resolved path (e.g., '/identifications/abc123')"),
+        method: z.enum(["GET", "POST", "PUT", "DELETE"]).describe("HTTP method"),
+      },
+      annotations: { readOnlyHint: true },
+    }, async ({ path, method }) => {
+      return await this.handleGetApiSpecs({ path, method });
+    });
 
-      try {
-        switch (name) {
-          case "list-all-endpoints":
-            if (!isListAllEndpointsArgs(args)) {
-              throw new McpError(
-                ErrorCode.InvalidParams,
-                "Invalid arguments for list-all-endpoints"
-              );
-            }
-            return await this.handleListAllEndpoints(args);
-
-          case "get-api-specs":
-            if (!isGetApiSpecsArgs(args)) {
-              throw new McpError(
-                ErrorCode.InvalidParams,
-                "Invalid arguments for get-api-specs"
-              );
-            }
-            return await this.handleGetApiSpecs(args);
-
-          case "invoke-api-endpoint":
-            if (!isInvokeApiEndpointArgs(args)) {
-              throw new McpError(
-                ErrorCode.InvalidParams,
-                "Invalid arguments for invoke-api-endpoint"
-              );
-            }
-            return await this.handleInvokeApiEndpoint(args);
-
-          default:
-            throw new McpError(
-              ErrorCode.MethodNotFound,
-              `Unknown tool: ${name}`
-            );
-        }
-      } catch (error) {
-        if (error instanceof McpError) {
-          throw error;
-        }
-        throw new McpError(
-          ErrorCode.InternalError,
-          `Tool execution failed: ${
-            error instanceof Error ? error.message : String(error)
-          }`
-        );
-      }
+    this.server.registerTool("invoke-api-endpoint", {
+      description:
+        "Make an actual API call to the Iron API. Use this ONLY after getting complete endpoint specifications with the get-api-specs MCP tool. This tool requires proper authentication and can be in read-only mode if configured.",
+      inputSchema: {
+        path: z.string().describe("The API endpoint path — either a template (e.g., '/identifications/{id}') with path params in parameters, or an already-resolved path (e.g., '/identifications/abc123')"),
+        method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]).describe("HTTP method"),
+        parameters: z.record(z.unknown()).optional().describe("Path and query parameters as key-value pairs. Path parameters (e.g., {id}) are substituted into the path template; remaining parameters are appended as query string"),
+        body: z.record(z.unknown()).optional().describe("Request body for POST/PUT/PATCH requests"),
+        headers: z.record(z.string()).optional().describe("Additional headers as key-value pairs"),
+      },
+      annotations: { openWorldHint: true },
+    }, async ({ path, method, parameters, body, headers }) => {
+      return await this.handleInvokeApiEndpoint({ path, method, parameters, body, headers });
     });
   }
 
   private setupPromptHandlers() {
-    this.server.setRequestHandler(ListPromptsRequestSchema, async () => ({
-      prompts: [
-        {
-          name: "find-endpoint",
-          description:
-            "🎯 Discover the right API endpoint for your goal. This prompt provides intelligent suggestions and guides you through the proper workflow: list-all-endpoints → get-api-specs → invoke-api-endpoint",
-          arguments: [
-            {
-              name: "goal",
-              description:
-                "Describe what you want to accomplish (e.g., 'create a customer', 'list transactions', 'get autoramp details')",
-              required: true,
-            },
-          ],
-        },
-        {
-          name: "test-endpoint",
-          description:
-            "🧪 Get step-by-step guidance for testing a specific API endpoint. Provides parameter examples, common use cases, and testing strategies.",
-          arguments: [
-            {
-              name: "path",
-              description: "The API endpoint path (e.g., '/customers')",
-              required: true,
-            },
-            {
-              name: "method",
-              description: "HTTP method (GET, POST, PUT, DELETE)",
-              required: true,
-            },
-            {
-              name: "goal",
-              description:
-                "Optional: What you want to accomplish with this endpoint",
-              required: false,
-            },
-          ],
-        },
-        {
-          name: "analyze-response",
-          description:
-            "🔍 Analyze and understand API response data. Get insights about data structure, next steps, and related endpoints you might need.",
-          arguments: [
-            {
-              name: "response_data",
-              description:
-                "The API response data (JSON string or formatted data)",
-              required: true,
-            },
-            {
-              name: "endpoint_path",
-              description: "The endpoint path that returned this data",
-              required: true,
-            },
-            {
-              name: "endpoint_method",
-              description: "The HTTP method used",
-              required: true,
-            },
-            {
-              name: "goal",
-              description:
-                "Optional: Your overall goal to get more targeted analysis",
-              required: false,
-            },
-          ],
-        },
-      ],
-    }));
+    this.server.registerPrompt("find-endpoint", {
+      description:
+        "Discover the right API endpoint for your goal. This prompt provides intelligent suggestions and guides you through the proper workflow: list-all-endpoints -> get-api-specs -> invoke-api-endpoint",
+      argsSchema: {
+        goal: z.string().describe("Describe what you want to accomplish (e.g., 'create a customer', 'list transactions', 'get autoramp details')"),
+      },
+    }, async ({ goal }) => {
+      return await handleFindEndpointPrompt(
+        { goal },
+        (spec: OpenAPISpec) => this.createSummary(spec),
+        () => this.loadOpenApiSpec()
+      );
+    });
 
-    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-      const { name, arguments: args } = request.params;
+    this.server.registerPrompt("test-endpoint", {
+      description:
+        "Get step-by-step guidance for testing a specific API endpoint. Provides parameter examples, common use cases, and testing strategies.",
+      argsSchema: {
+        path: z.string().describe("The API endpoint path (e.g., '/customers')"),
+        method: z.string().describe("HTTP method (GET, POST, PUT, DELETE)"),
+        goal: z.string().optional().describe("What you want to accomplish with this endpoint"),
+      },
+    }, async ({ path, method, goal }) => {
+      return await handleTestEndpointPrompt(
+        { path, method, goal },
+        (spec: OpenAPISpec, p: string, m: string) => this.getEndpointDetails(spec, p, m),
+        () => this.loadOpenApiSpec()
+      );
+    });
 
-      try {
-        switch (name) {
-          case "find-endpoint":
-            if (!isFindEndpointPromptArgs(args)) {
-              throw new McpError(
-                ErrorCode.InvalidParams,
-                "Invalid arguments for find-endpoint prompt"
-              );
-            }
-            return await handleFindEndpointPrompt(
-              args,
-              (spec: OpenAPISpec) => this.createSummary(spec),
-              () => this.loadOpenApiSpec()
-            );
-
-          case "test-endpoint":
-            if (!isTestEndpointPromptArgs(args)) {
-              throw new McpError(
-                ErrorCode.InvalidParams,
-                "Invalid arguments for test-endpoint prompt"
-              );
-            }
-            return await handleTestEndpointPrompt(
-              args,
-              (spec: OpenAPISpec, path: string, method: string) =>
-                this.getEndpointDetails(spec, path, method),
-              () => this.loadOpenApiSpec()
-            );
-
-          case "analyze-response":
-            if (!isAnalyzeResponsePromptArgs(args)) {
-              throw new McpError(
-                ErrorCode.InvalidParams,
-                "Invalid arguments for analyze-response prompt"
-              );
-            }
-            return await handleAnalyzeResponsePrompt(args);
-
-          default:
-            throw new McpError(
-              ErrorCode.MethodNotFound,
-              `Unknown prompt: ${name}`
-            );
-        }
-      } catch (error) {
-        if (error instanceof McpError) {
-          throw error;
-        }
-        throw new McpError(
-          ErrorCode.InternalError,
-          `Prompt execution failed: ${
-            error instanceof Error ? error.message : String(error)
-          }`
-        );
-      }
+    this.server.registerPrompt("analyze-response", {
+      description:
+        "Analyze and understand API response data. Get insights about data structure, next steps, and related endpoints you might need.",
+      argsSchema: {
+        response_data: z.string().describe("The API response data (JSON string or formatted data)"),
+        endpoint_path: z.string().describe("The endpoint path that returned this data"),
+        endpoint_method: z.string().describe("The HTTP method used"),
+        goal: z.string().optional().describe("Your overall goal to get more targeted analysis"),
+      },
+    }, async ({ response_data, endpoint_path, endpoint_method, goal }) => {
+      return await handleAnalyzeResponsePrompt({
+        response_data, endpoint_path, endpoint_method, goal,
+      });
     });
   }
 
@@ -623,7 +395,7 @@ class IronXyzMcpServer {
     return {
       content: [
         {
-          type: "text",
+          type: "text" as const,
           text: JSON.stringify(result, null, 2),
         },
       ],
@@ -648,7 +420,7 @@ class IronXyzMcpServer {
     return {
       content: [
         {
-          type: "text",
+          type: "text" as const,
           text: JSON.stringify(endpointDetails, null, 2),
         },
       ],
@@ -685,15 +457,31 @@ class IronXyzMcpServer {
     }
 
     try {
-      const { path, method, parameters, body, headers } = args;
+      const { method, parameters, body, headers } = args;
+      let { path } = args;
+
+      // Substitute path parameters (e.g., /identifications/{id} -> /identifications/abc123)
+      const remainingParams: Record<string, unknown> = { ...parameters };
+      if (parameters) {
+        const templateParams = path.match(/\{([^}]+)\}/g);
+        if (templateParams) {
+          for (const tpl of templateParams) {
+            const paramName = tpl.slice(1, -1);
+            if (paramName in remainingParams) {
+              path = path.replace(tpl, encodeURIComponent(String(remainingParams[paramName])));
+              delete remainingParams[paramName];
+            }
+          }
+        }
+      }
 
       // Build the full URL
       let url = `${this.config.baseUrl}${path}`;
 
-      // Add query parameters
-      if (parameters && Object.keys(parameters).length > 0) {
+      // Add remaining parameters as query string
+      if (Object.keys(remainingParams).length > 0) {
         const urlParams = new URLSearchParams();
-        Object.entries(parameters).forEach(([key, value]) => {
+        Object.entries(remainingParams).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
             urlParams.append(key, String(value));
           }
@@ -716,7 +504,7 @@ class IronXyzMcpServer {
         method: method as HttpMethod,
         url,
         headers: requestHeaders,
-        data: body ? JSON.stringify(body) : undefined,
+        data: body ?? undefined,
         timeout: 30000,
       };
 
@@ -752,7 +540,7 @@ class IronXyzMcpServer {
       return {
         content: [
           {
-            type: "text",
+            type: "text" as const,
             text: formattedResponse,
           },
         ],
@@ -776,9 +564,10 @@ class IronXyzMcpServer {
 
         const formattedError = formatApiError(apiError, requestInfo, url);
         return {
+          isError: true as const,
           content: [
             {
-              type: "text",
+              type: "text" as const,
               text: formattedError,
             },
           ],
@@ -790,9 +579,10 @@ class IronXyzMcpServer {
 
         const formattedError = formatApiError(genericError, requestInfo, url);
         return {
+          isError: true as const,
           content: [
             {
-              type: "text",
+              type: "text" as const,
               text: formattedError,
             },
           ],

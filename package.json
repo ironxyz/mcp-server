@@ -17,9 +17,10 @@
     "prepublishOnly": "pnpm run build && pnpm run test"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.7.0",
-    "axios": "^1.6.0",
-    "js-yaml": "^4.1.0"
+    "@modelcontextprotocol/sdk": "1.28.0",
+    "axios": "1.13.5",
+    "zod": "3.25.76",
+    "js-yaml": "4.1.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.0",
