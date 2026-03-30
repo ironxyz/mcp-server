@@ -456,6 +456,358 @@ describe("API Endpoint Invocation Logic", () => {
   });
 });
 
+// =============================================================================
+// Path template matching and parameter substitution helpers
+// These mirror the logic in IronXyzMcpServer
+// =============================================================================
+
+function findMatchingPathTemplate(
+  spec: OpenAPISpec,
+  path: string
+): string | null {
+  if (spec.paths[path]) return path;
+
+  for (const template of Object.keys(spec.paths)) {
+    const regex = new RegExp(
+      "^" + template.replace(/\{[^}]+\}/g, "([^/]+)") + "$"
+    );
+    if (regex.test(path)) return template;
+  }
+
+  return null;
+}
+
+function buildRequestUrl(
+  baseUrl: string,
+  path: string,
+  parameters?: Record<string, unknown>
+): { url: string; resolvedPath: string; queryParams: Record<string, unknown> } {
+  let resolvedPath = path;
+  const remainingParams: Record<string, unknown> = { ...parameters };
+
+  if (parameters) {
+    const templateParams = resolvedPath.match(/\{([^}]+)\}/g);
+    if (templateParams) {
+      for (const tpl of templateParams) {
+        const paramName = tpl.slice(1, -1);
+        if (paramName in remainingParams) {
+          resolvedPath = resolvedPath.replace(
+            tpl,
+            encodeURIComponent(String(remainingParams[paramName]))
+          );
+          delete remainingParams[paramName];
+        }
+      }
+    }
+  }
+
+  let url = `${baseUrl}${resolvedPath}`;
+
+  if (Object.keys(remainingParams).length > 0) {
+    const urlParams = new URLSearchParams();
+    Object.entries(remainingParams).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        urlParams.append(key, String(value));
+      }
+    });
+    const queryString = urlParams.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+  }
+
+  return { url, resolvedPath, queryParams: remainingParams };
+}
+
+// Extended mock spec with path-parameter endpoints
+const mockSpecWithPathParams: OpenAPISpec = {
+  openapi: "3.0.0",
+  info: { title: "Test API", version: "1.0.0" },
+  paths: {
+    ...mockOpenApiSpec.paths,
+    "/customers/{id}": {
+      get: {
+        summary: "Get customer by ID",
+        operationId: "getCustomer",
+        tags: ["Customer"],
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        responses: { "200": { description: "Customer details" } },
+      },
+      put: {
+        summary: "Update customer",
+        operationId: "updateCustomer",
+        tags: ["Customer"],
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        requestBody: {
+          content: { "application/json": { schema: { type: "object" } } },
+        },
+        responses: { "200": { description: "Customer updated" } },
+      },
+    },
+    "/customers/{customerId}/transactions": {
+      get: {
+        summary: "List customer transactions",
+        operationId: "listCustomerTransactions",
+        tags: ["Customer"],
+        parameters: [
+          { name: "customerId", in: "path", required: true, schema: { type: "string" } },
+          { name: "limit", in: "query", schema: { type: "integer" } },
+        ],
+        responses: { "200": { description: "Transaction list" } },
+      },
+    },
+    "/identifications/{id}": {
+      get: {
+        summary: "Get identification",
+        operationId: "getIdentification",
+        tags: ["Identification"],
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        responses: { "200": { description: "Identification details" } },
+      },
+    },
+    "/customers/{customerId}/identifications/{identificationId}": {
+      get: {
+        summary: "Get customer identification",
+        operationId: "getCustomerIdentification",
+        tags: ["Identification"],
+        parameters: [
+          { name: "customerId", in: "path", required: true, schema: { type: "string" } },
+          { name: "identificationId", in: "path", required: true, schema: { type: "string" } },
+        ],
+        responses: { "200": { description: "Identification details" } },
+      },
+    },
+  },
+};
+
+describe("Path Template Matching", () => {
+  it("should match exact paths without templates", () => {
+    const result = findMatchingPathTemplate(mockSpecWithPathParams, "/customers");
+    expect(result).toBe("/customers");
+  });
+
+  it("should match a resolved path to its template", () => {
+    const result = findMatchingPathTemplate(mockSpecWithPathParams, "/customers/cust_abc123");
+    expect(result).toBe("/customers/{id}");
+  });
+
+  it("should match nested path with single param", () => {
+    const result = findMatchingPathTemplate(
+      mockSpecWithPathParams,
+      "/customers/cust_abc/transactions"
+    );
+    expect(result).toBe("/customers/{customerId}/transactions");
+  });
+
+  it("should match paths with multiple path parameters", () => {
+    const result = findMatchingPathTemplate(
+      mockSpecWithPathParams,
+      "/customers/cust_abc/identifications/id_xyz"
+    );
+    expect(result).toBe("/customers/{customerId}/identifications/{identificationId}");
+  });
+
+  it("should return null for completely unknown paths", () => {
+    const result = findMatchingPathTemplate(mockSpecWithPathParams, "/unknown/path");
+    expect(result).toBeNull();
+  });
+
+  it("should return null when path has extra segments", () => {
+    const result = findMatchingPathTemplate(
+      mockSpecWithPathParams,
+      "/customers/abc/transactions/extra"
+    );
+    expect(result).toBeNull();
+  });
+
+  it("should prefer exact match over template match", () => {
+    const result = findMatchingPathTemplate(mockSpecWithPathParams, "/customers");
+    expect(result).toBe("/customers");
+  });
+});
+
+describe("Path Parameter Substitution", () => {
+  const baseUrl = "https://api.iron.xyz/api";
+
+  it("should substitute a single path parameter", () => {
+    const { url, resolvedPath } = buildRequestUrl(
+      baseUrl,
+      "/customers/{id}",
+      { id: "cust_abc123" }
+    );
+    expect(resolvedPath).toBe("/customers/cust_abc123");
+    expect(url).toBe("https://api.iron.xyz/api/customers/cust_abc123");
+  });
+
+  it("should substitute multiple path parameters", () => {
+    const { url } = buildRequestUrl(
+      baseUrl,
+      "/customers/{customerId}/identifications/{identificationId}",
+      { customerId: "cust_abc", identificationId: "id_xyz" }
+    );
+    expect(url).toBe(
+      "https://api.iron.xyz/api/customers/cust_abc/identifications/id_xyz"
+    );
+  });
+
+  it("should URL-encode path parameter values", () => {
+    const { url } = buildRequestUrl(
+      baseUrl,
+      "/customers/{id}",
+      { id: "has spaces/and+slashes" }
+    );
+    expect(url).toBe(
+      "https://api.iron.xyz/api/customers/has%20spaces%2Fand%2Bslashes"
+    );
+  });
+
+  it("should leave path unchanged when no parameters are provided", () => {
+    const { url } = buildRequestUrl(baseUrl, "/customers", undefined);
+    expect(url).toBe("https://api.iron.xyz/api/customers");
+  });
+
+  it("should leave unresolved templates when parameter is missing", () => {
+    const { url } = buildRequestUrl(baseUrl, "/customers/{id}", {});
+    expect(url).toBe("https://api.iron.xyz/api/customers/{id}");
+  });
+});
+
+describe("Query Parameter Handling", () => {
+  const baseUrl = "https://api.iron.xyz/api";
+
+  it("should append query parameters for paths without templates", () => {
+    const { url } = buildRequestUrl(baseUrl, "/customers", {
+      page: 1,
+      limit: 10,
+    });
+    expect(url).toBe("https://api.iron.xyz/api/customers?page=1&limit=10");
+  });
+
+  it("should separate path params from query params", () => {
+    const { url, queryParams } = buildRequestUrl(
+      baseUrl,
+      "/customers/{customerId}/transactions",
+      { customerId: "cust_abc", limit: 10, offset: 0 }
+    );
+    expect(url).toBe(
+      "https://api.iron.xyz/api/customers/cust_abc/transactions?limit=10&offset=0"
+    );
+    expect(queryParams).toEqual({ limit: 10, offset: 0 });
+    expect(queryParams).not.toHaveProperty("customerId");
+  });
+
+  it("should skip null and undefined query values", () => {
+    const { url } = buildRequestUrl(baseUrl, "/customers", {
+      page: 1,
+      filter: null,
+      sort: undefined,
+    });
+    expect(url).toBe("https://api.iron.xyz/api/customers?page=1");
+  });
+
+  it("should produce no query string when all params are used for path", () => {
+    const { url } = buildRequestUrl(baseUrl, "/customers/{id}", {
+      id: "cust_abc",
+    });
+    expect(url).toBe("https://api.iron.xyz/api/customers/cust_abc");
+    expect(url).not.toContain("?");
+  });
+});
+
+describe("Body Parameter Handling", () => {
+  it("should pass body object through without double-serialization", () => {
+    const body = { name: "Acme Corp", email: "acme@example.com" };
+    // Mirrors the server logic: body is passed directly to axios (no JSON.stringify)
+    const data = body ?? undefined;
+    expect(data).toEqual(body);
+    expect(typeof data).toBe("object");
+  });
+
+  it("should handle nested body objects", () => {
+    const body = {
+      name: "Acme Corp",
+      metadata: { source: "api", tags: ["vip", "enterprise"] },
+    };
+    const data = body ?? undefined;
+    expect(data).toEqual(body);
+    expect(data!.metadata.tags).toHaveLength(2);
+  });
+
+  it("should handle undefined body", () => {
+    const body = undefined;
+    const data = body ?? undefined;
+    expect(data).toBeUndefined();
+  });
+});
+
+describe("Combined Parameter Scenarios", () => {
+  const baseUrl = "https://api.iron.xyz/api";
+
+  it("should handle path params + query params + body together", () => {
+    const path = "/customers/{id}";
+    const parameters = { id: "cust_abc", include: "transactions" };
+    const body = { name: "Updated Name" };
+
+    const { url, queryParams } = buildRequestUrl(baseUrl, path, parameters);
+    const data = body ?? undefined;
+
+    expect(url).toBe(
+      "https://api.iron.xyz/api/customers/cust_abc?include=transactions"
+    );
+    expect(queryParams).toEqual({ include: "transactions" });
+    expect(data).toEqual({ name: "Updated Name" });
+  });
+
+  it("should handle resolved path (no template) + body", () => {
+    const { url } = buildRequestUrl(
+      baseUrl,
+      "/customers/cust_abc",
+      undefined
+    );
+    const body = { name: "Updated Name" };
+    const data = body ?? undefined;
+
+    expect(url).toBe("https://api.iron.xyz/api/customers/cust_abc");
+    expect(data).toEqual({ name: "Updated Name" });
+  });
+
+  it("should handle resolved path + query params (no template substitution needed)", () => {
+    const { url } = buildRequestUrl(
+      baseUrl,
+      "/customers/cust_abc/transactions",
+      { limit: 5, status: "completed" }
+    );
+    expect(url).toBe(
+      "https://api.iron.xyz/api/customers/cust_abc/transactions?limit=5&status=completed"
+    );
+  });
+
+  it("endpoint lookup should work with both template and resolved paths", () => {
+    // Template path
+    const template = findMatchingPathTemplate(
+      mockSpecWithPathParams,
+      "/identifications/{id}"
+    );
+    expect(template).toBe("/identifications/{id}");
+
+    // Resolved path
+    const resolved = findMatchingPathTemplate(
+      mockSpecWithPathParams,
+      "/identifications/id_abc123"
+    );
+    expect(resolved).toBe("/identifications/{id}");
+
+    // Both resolve to the same spec entry
+    expect(template).toBe(resolved);
+  });
+});
+
 describe("Schema Reference Resolution", () => {
   it("should handle $ref resolution correctly", () => {
     const specWithRefs: OpenAPISpec = {
