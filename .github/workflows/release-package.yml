@@ -45,4 +45,4 @@ jobs:
       - name: Publish release
         run: pnpm run release
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_API_KEY }}
+          NODE_AUTH_TOKEN: ${{ secrets.IRON_NPM_PUBLISHING_TOKEN }}
