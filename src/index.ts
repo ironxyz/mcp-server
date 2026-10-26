@@ -319,9 +319,9 @@ class IronXyzMcpServer {
       inputSchema: {
         path: z.string().describe("The API endpoint path — either a template (e.g., '/identifications/{id}') with path params in parameters, or an already-resolved path (e.g., '/identifications/abc123')"),
         method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]).describe("HTTP method"),
-        parameters: z.record(z.unknown()).optional().describe("Path and query parameters as key-value pairs. Path parameters (e.g., {id}) are substituted into the path template; remaining parameters are appended as query string"),
-        body: z.record(z.unknown()).optional().describe("Request body for POST/PUT/PATCH requests"),
-        headers: z.record(z.string()).optional().describe("Additional headers as key-value pairs"),
+        parameters: z.record(z.string(), z.unknown()).optional().describe("Path and query parameters as key-value pairs. Path parameters (e.g., {id}) are substituted into the path template; remaining parameters are appended as query string"),
+        body: z.record(z.string(), z.unknown()).optional().describe("Request body for POST/PUT/PATCH requests"),
+        headers: z.record(z.string(), z.string()).optional().describe("Additional headers as key-value pairs"),
       },
       annotations: { openWorldHint: true },
     }, async ({ path, method, parameters, body, headers }) => {

@@ -178,9 +178,9 @@ Actually calls the Iron.xyz API endpoints with proper authentication and validat
 
 - `path` (string, required): The API path (e.g., '/customers') - `/api` prefix is added automatically
 - `method` (string, required): The HTTP method (GET, POST, PUT, DELETE, etc.)
-- `parameters` (object, optional): Query parameters as key-value pairs
-- `headers` (object, optional): Additional headers as key-value pairs
-- `body` (object, optional): Request body for POST/PUT/PATCH requests
+- `parameters` (object, optional): Path and query parameters with string keys
+- `headers` (object, optional): Additional headers with string keys and string values
+- `body` (object, optional): Request body for POST/PUT/PATCH requests; accepts arbitrary values under string keys, including nested objects
 
 **Features:**
 
